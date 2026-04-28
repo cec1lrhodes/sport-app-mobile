@@ -43,7 +43,7 @@ const BottomNav = () => {
               className={cn(
                 "flex h-11 items-center justify-center rounded-lg text-sm font-medium text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 isActive
-                  ? "bg-primary"
+                  ? "bg-orange-500"
                   : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground",
               )}
             >

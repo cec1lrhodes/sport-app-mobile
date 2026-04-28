@@ -5,10 +5,19 @@ import {
   CardHeader,
   CardTitle,
 } from "@/ui/card";
-import { Input } from "@/ui/input";
 import ExerciseForm from "@/components/layout/MainPage_Layout/ExerciseForm";
+import { ChatWithCoach } from "../layout/MainPage_Layout/ChatWithCoach";
+import { useExerciseStore } from "@/store/useExerciseStore";
 
 function MainPage() {
+  const exercises = useExerciseStore((state) => state.exercises);
+  const handleExerciseValueChange = useExerciseStore(
+    (state) => state.handleExerciseValueChange,
+  );
+  const handleExerciseConfirm = useExerciseStore(
+    (state) => state.handleExerciseConfirm,
+  );
+
   return (
     <main className="min-h-screen bg-background px-4 pb-24 pt-8 text-foreground">
       <section className="mx-auto flex min-h-[calc(100vh-8rem)] w-full max-w-sm flex-col gap-7">
@@ -19,9 +28,13 @@ function MainPage() {
           <h1 className="text-3xl font-bold tracking-tight">Training Loop</h1>
         </header>
 
-        <ExerciseForm />
+        <ExerciseForm
+          exercises={exercises}
+          onExerciseConfirm={handleExerciseConfirm}
+          onExerciseValueChange={handleExerciseValueChange}
+        />
 
-        <section aria-labelledby="rpe-heading" className="space-y-3">
+        <section aria-labelledby="rpe-heading" className="space-y-3 mt-10">
           <h2 id="rpe-heading" className="text-2xl font-bold">
             What is RPE ?
           </h2>
@@ -64,14 +77,7 @@ function MainPage() {
             YOU can ask your trainer
           </p>
 
-          <Card className="border border-border bg-card/90 shadow-2xl shadow-black/20">
-            <CardContent>
-              <Input
-                className="h-15 w-full border-border bg-background text-center text-lg font-semibold"
-                placeholder="Ask your trainer..."
-              />
-            </CardContent>
-          </Card>
+          <ChatWithCoach />
         </section>
       </section>
     </main>

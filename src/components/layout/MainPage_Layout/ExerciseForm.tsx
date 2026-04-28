@@ -1,6 +1,12 @@
-import { type FormEvent, useState } from "react";
+import type { FormEvent } from "react";
 import { Input } from "@/ui/input";
 import { Button } from "@/ui/button";
+import { cn } from "@/lib/utils";
+import type {
+  ExerciseField,
+  ExerciseFormItem,
+  ExerciseId,
+} from "@/types/exerciseFormTypes";
 import {
   Accordion,
   AccordionContent,
@@ -8,67 +14,58 @@ import {
   AccordionTrigger,
 } from "@/ui/accordion";
 
-const effortItems = [
-  { name: "Bench Press", id: 1 },
-  { name: "Squat", id: 2 },
-  { name: "Pull-Ups", id: 3 },
-] as const;
-
-type ExerciseId = (typeof effortItems)[number]["id"];
-type ExerciseField = "kg" | "reps";
-type ExerciseValues = Record<ExerciseId, Record<ExerciseField, string>>;
-
-const initialExerciseValues: ExerciseValues = {
-  1: { kg: "", reps: "" },
-  2: { kg: "", reps: "" },
-  3: { kg: "", reps: "" },
-};
-
-const ExerciseForm = () => {
-  const [exerciseValues, setExerciseValues] = useState(initialExerciseValues);
-
-  const handleExerciseValueChange = (
+type ExerciseFormProps = {
+  exercises: ExerciseFormItem[];
+  onExerciseValueChange: (
     id: ExerciseId,
     field: ExerciseField,
     value: string,
-  ) => {
-    setExerciseValues((currentValues) => ({
-      ...currentValues,
-      [id]: {
-        ...currentValues[id],
-        [field]: value,
-      },
-    }));
-  };
+  ) => void;
+  onExerciseConfirm: (id: ExerciseId) => void;
+};
 
-  const handleExerciseConfirm = (event: FormEvent<HTMLFormElement>) => {
+const ExerciseForm = ({
+  exercises,
+  onExerciseValueChange,
+  onExerciseConfirm,
+}: ExerciseFormProps) => {
+  const handleExerciseSubmit = (
+    event: FormEvent<HTMLFormElement>,
+    id: ExerciseId,
+  ) => {
     event.preventDefault();
+    onExerciseConfirm(id);
   };
 
   return (
     <section
       aria-labelledby="effort-heading"
-      className="rounded-3xl bg-card/70 p-4 ring-1 ring-border"
+      className="rounded-3xl bg-card/70 p-4 ring-1 ring-border "
     >
       <h2 id="effort-heading" className="sr-only">
         RPE inputs
       </h2>
 
       <Accordion type="single" collapsible className="space-y-3">
-        {effortItems.map((item) => (
+        {exercises.map((item) => (
           <AccordionItem
             key={item.id}
             value={String(item.id)}
             className="rounded-2xl border-none bg-secondary/60 px-4 py-3 transition-colors not-last:border-b-0 hover:bg-secondary/80"
           >
-            <AccordionTrigger className="py-0 text-base font-medium text-secondary-foreground hover:no-underline focus-visible:border-transparent focus-visible:ring-0">
+            <AccordionTrigger
+              className={cn(
+                "py-0 text-base font-medium text-secondary-foreground hover:no-underline focus-visible:border-transparent focus-visible:ring-0",
+                item.isConfirmed && "text-green-400",
+              )}
+            >
               {item.name}
             </AccordionTrigger>
 
             <AccordionContent className="pb-0 ">
               <form
                 className="mt-3 space-y-3 border-t border-border/60 pt-3"
-                onSubmit={handleExerciseConfirm}
+                onSubmit={(event) => handleExerciseSubmit(event, item.id)}
               >
                 <label className="grid gap-2 text-sm font-medium text-secondary-foreground">
                   kg
@@ -79,13 +76,9 @@ const ExerciseForm = () => {
                     min={0}
                     placeholder="0"
                     type="number"
-                    value={exerciseValues[item.id].kg}
+                    value={item.values.kg}
                     onChange={(event) =>
-                      handleExerciseValueChange(
-                        item.id,
-                        "kg",
-                        event.target.value,
-                      )
+                      onExerciseValueChange(item.id, "kg", event.target.value)
                     }
                   />
                 </label>
@@ -99,18 +92,18 @@ const ExerciseForm = () => {
                     min={0}
                     placeholder="0"
                     type="number"
-                    value={exerciseValues[item.id].reps}
+                    value={item.values.reps}
                     onChange={(event) =>
-                      handleExerciseValueChange(
-                        item.id,
-                        "reps",
-                        event.target.value,
-                      )
+                      onExerciseValueChange(item.id, "reps", event.target.value)
                     }
                   />
                 </label>
 
-                <Button className="h-10 w-full" type="submit">
+                <Button
+                  className="h-10 w-full"
+                  disabled={item.isConfirmDisabled}
+                  type="submit"
+                >
                   confirm
                 </Button>
               </form>
