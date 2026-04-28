@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ThirdRouteImport } from './routes/third'
 import { Route as SecondRouteImport } from './routes/second'
+import { Route as CreateLoopRouteImport } from './routes/create-loop'
 import { Route as IndexRouteImport } from './routes/index'
 
 const ThirdRoute = ThirdRouteImport.update({
@@ -23,6 +24,11 @@ const SecondRoute = SecondRouteImport.update({
   path: '/second',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CreateLoopRoute = CreateLoopRouteImport.update({
+  id: '/create-loop',
+  path: '/create-loop',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -31,30 +37,34 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/create-loop': typeof CreateLoopRoute
   '/second': typeof SecondRoute
   '/third': typeof ThirdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/create-loop': typeof CreateLoopRoute
   '/second': typeof SecondRoute
   '/third': typeof ThirdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/create-loop': typeof CreateLoopRoute
   '/second': typeof SecondRoute
   '/third': typeof ThirdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/second' | '/third'
+  fullPaths: '/' | '/create-loop' | '/second' | '/third'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/second' | '/third'
-  id: '__root__' | '/' | '/second' | '/third'
+  to: '/' | '/create-loop' | '/second' | '/third'
+  id: '__root__' | '/' | '/create-loop' | '/second' | '/third'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CreateLoopRoute: typeof CreateLoopRoute
   SecondRoute: typeof SecondRoute
   ThirdRoute: typeof ThirdRoute
 }
@@ -75,6 +85,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SecondRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/create-loop': {
+      id: '/create-loop'
+      path: '/create-loop'
+      fullPath: '/create-loop'
+      preLoaderRoute: typeof CreateLoopRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -87,6 +104,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CreateLoopRoute: CreateLoopRoute,
   SecondRoute: SecondRoute,
   ThirdRoute: ThirdRoute,
 }
