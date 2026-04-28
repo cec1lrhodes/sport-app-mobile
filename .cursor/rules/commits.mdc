@@ -1,0 +1,29 @@
+---
+alwaysApply: false
+---
+
+### Generate Commit Guidelines
+
+The commit contains the following structural elements, to communicate intent to the consumers of your library:
+
+- `fix:` — patches a bug in your codebase (PATCH in semver)
+- `feat:` — introduces a new feature (MINOR in semver)
+- Others: `chore:`, `docs:`, `style:`, `refactor:`, `perf:`, `test:`, and others
+
+A scope may be provided to a commit's type:
+`feat(parser): add ability to parse arrays`
+
+### Commit message format
+
+```
+<type>[optional scope]: <description>
+
+[optional body]
+```
+
+Rules:
+
+- Do not end the subject line with a period
+- Use the imperative mood in the subject line
+- Use the body to explain **what** and **why**, not how
+- Keep subject line under 72 characters
