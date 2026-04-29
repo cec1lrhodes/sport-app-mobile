@@ -1,11 +1,11 @@
-import * as React from 'react'
-import { Outlet, createRootRoute } from '@tanstack/react-router'
+import * as React from "react";
+import { Outlet, createRootRoute } from "@tanstack/react-router";
 
-import BottomNav from '@/components/layout/BottomNav'
+import BottomNav from "@/components/layout/common/BottomNav";
 
 export const Route = createRootRoute({
   component: RootComponent,
-})
+});
 
 function RootComponent() {
   return (
@@ -13,5 +13,5 @@ function RootComponent() {
       <Outlet />
       <BottomNav />
     </React.Fragment>
-  )
+  );
 }

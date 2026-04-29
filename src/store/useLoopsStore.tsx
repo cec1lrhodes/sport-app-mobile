@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-export type LoopDraftField = "exercise" | "repetitions" | "weight";
+export type LoopDraftField = "title" | "exercise" | "repetitions" | "weight";
 
 export type LoopDraft = Record<LoopDraftField, string>;
 
@@ -22,6 +22,7 @@ type LoopsStore = {
 };
 
 const initialLoopDraft: LoopDraft = {
+  title: "",
   exercise: "",
   repetitions: "",
   weight: "",
@@ -45,6 +46,7 @@ export const useLoopsStore = create<LoopsStore>()((set) => ({
   addLoop: () =>
     set((currentState) => {
       const exercise = currentState.loopDraft.exercise.trim();
+      const title = currentState.loopDraft.title.trim();
       const exerciseLines = exercise
         .split("\n")
         .map((exerciseLine) => exerciseLine.trim())
@@ -62,14 +64,16 @@ export const useLoopsStore = create<LoopsStore>()((set) => ({
       const exercisesCount = exerciseLines.length;
 
       return {
+        loopDraft: initialLoopDraft,
         loops: [
           ...currentState.loops,
           {
             id: Date.now(),
             title:
-              exerciseLines.length > 1
+              title ||
+              (exerciseLines.length > 1
                 ? "Custom programm"
-                : firstExerciseTitle || "New programm",
+                : firstExerciseTitle || "New programm"),
             description: exerciseLines.join(" / "),
             exercisesCount,
             weeks: 8,

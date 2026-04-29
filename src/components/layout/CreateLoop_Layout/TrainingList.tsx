@@ -6,13 +6,17 @@ import { formatExerciseLine, type TrainingExercise } from "./createLoopTypes";
 
 type TrainingListProps = {
   trainingExercises: TrainingExercise[];
+  isNameSet: boolean;
   onConfirm: () => void;
+  onSetName: () => void;
   onRemoveExercise: (exerciseId: number) => void;
 };
 
 const TrainingList = ({
   trainingExercises,
+  isNameSet,
   onConfirm,
+  onSetName,
   onRemoveExercise,
 }: TrainingListProps) => {
   const [isConfirmed, setIsConfirmed] = useState(false);
@@ -30,6 +34,10 @@ const TrainingList = ({
       window.clearTimeout(timeoutId);
     };
   }, [isConfirmed]);
+
+  const handleSetName = () => {
+    onSetName();
+  };
 
   const handleConfirm = () => {
     if (trainingExercises.length === 0) {
@@ -82,35 +90,62 @@ const TrainingList = ({
         )}
       </div>
 
-      <Button
-        type="button"
-        onClick={handleConfirm}
-        disabled={trainingExercises.length === 0 && !isConfirmed}
-        className={`relative mt-4 h-12 w-full overflow-hidden rounded-xl bg-emerald-400/70 text-base font-semibold text-black hover:bg-emerald-500 ${
-          isConfirmed ? "disabled:opacity-100" : ""
-        }`}
-        aria-label={
-          isConfirmed ? "Program confirmed" : "Confirm created program"
-        }
-      >
-        <span
-          className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${
-            isConfirmed
-              ? "-translate-y-3 opacity-0"
-              : "translate-y-0 opacity-100"
-          }`}
+      <div className="mt-4 grid grid-cols-2 gap-3">
+        <Button
+          type="button"
+          onClick={handleSetName}
+          className="relative h-12 overflow-hidden rounded-xl bg-white text-base font-semibold text-black hover:bg-white/90"
+          aria-label={isNameSet ? "Program name set" : "Set program name"}
         >
-          Confirm
-        </span>
-        <span
-          className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${
-            isConfirmed ? "scale-100 opacity-100" : "scale-50 opacity-0"
+          <span
+            className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${
+              isNameSet
+                ? "-translate-y-3 opacity-0"
+                : "translate-y-0 opacity-100"
+            }`}
+          >
+            Set Name
+          </span>
+          <span
+            className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${
+              isNameSet ? "scale-100 opacity-100" : "scale-50 opacity-0"
+            }`}
+            aria-hidden={!isNameSet}
+          >
+            <Check className="size-6" aria-hidden="true" />
+          </span>
+        </Button>
+
+        <Button
+          type="button"
+          onClick={handleConfirm}
+          disabled={trainingExercises.length === 0 && !isConfirmed}
+          className={`relative h-12 overflow-hidden rounded-xl bg-emerald-400/70 text-base font-semibold text-black hover:bg-emerald-500 ${
+            isConfirmed ? "disabled:opacity-100" : ""
           }`}
-          aria-hidden={!isConfirmed}
+          aria-label={
+            isConfirmed ? "Program confirmed" : "Confirm created program"
+          }
         >
-          <Check className="size-6" aria-hidden="true" />
-        </span>
-      </Button>
+          <span
+            className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${
+              isConfirmed
+                ? "-translate-y-3 opacity-0"
+                : "translate-y-0 opacity-100"
+            }`}
+          >
+            Confirm
+          </span>
+          <span
+            className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${
+              isConfirmed ? "scale-100 opacity-100" : "scale-50 opacity-0"
+            }`}
+            aria-hidden={!isConfirmed}
+          >
+            <Check className="size-6" aria-hidden="true" />
+          </span>
+        </Button>
+      </div>
     </section>
   );
 };

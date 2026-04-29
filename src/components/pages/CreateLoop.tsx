@@ -7,6 +7,7 @@ import CreateLoopHeader from "@/components/layout/CreateLoop_Layout/CreateLoopHe
 import ExercisePicker from "@/components/layout/CreateLoop_Layout/ExercisePicker";
 import MetricsSelector from "@/components/layout/CreateLoop_Layout/MetricsSelector";
 import TrainingList from "@/components/layout/CreateLoop_Layout/TrainingList";
+import { InputForm } from "@/components/layout/common/InputForm";
 import {
   formatExerciseLine,
   type TrainingExercise,
@@ -16,6 +17,7 @@ import {
 
 const CreateLoop = () => {
   const addLoop = useLoopsStore((state) => state.addLoop);
+  const currentProgramTitle = useLoopsStore((state) => state.loopDraft.title);
   const handleLoopDraftChange = useLoopsStore(
     (state) => state.handleLoopDraftChange,
   );
@@ -35,6 +37,9 @@ const CreateLoop = () => {
     reps: 8,
     weight: 70,
   });
+  const [programName, setProgramName] = useState("");
+  const [isProgramNameDialogOpen, setIsProgramNameDialogOpen] = useState(false);
+  const [isProgramNameSet, setIsProgramNameSet] = useState(false);
 
   useEffect(() => {
     handleLoopDraftChange(
@@ -44,6 +49,20 @@ const CreateLoop = () => {
     handleLoopDraftChange("repetitions", String(trainingMetrics.reps));
     handleLoopDraftChange("weight", String(trainingMetrics.weight));
   }, [handleLoopDraftChange, trainingExercises, trainingMetrics]);
+
+  useEffect(() => {
+    if (!isProgramNameSet) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setIsProgramNameSet(false);
+    }, 1200);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [isProgramNameSet]);
 
   const handleMetricValueChange = useCallback(
     (metric: TrainingMetric, value: number) => {
@@ -92,6 +111,35 @@ const CreateLoop = () => {
     );
   };
 
+  const handleSetProgramName = () => {
+    setProgramName(currentProgramTitle);
+    setIsProgramNameDialogOpen(true);
+  };
+
+  const handleProgramNameChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    setProgramName(event.target.value);
+  };
+
+  const handleCloseProgramNameDialog = () => {
+    setIsProgramNameDialogOpen(false);
+  };
+
+  const handleSubmitProgramName = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const trimmedProgramName = programName.trim();
+
+    if (!trimmedProgramName) {
+      return;
+    }
+
+    handleLoopDraftChange("title", trimmedProgramName);
+    setIsProgramNameDialogOpen(false);
+    setIsProgramNameSet(true);
+  };
+
   const handleConfirmTraining = () => {
     addLoop();
     setTrainingExercises([]);
@@ -129,10 +177,30 @@ const CreateLoop = () => {
 
         <TrainingList
           trainingExercises={trainingExercises}
+          isNameSet={isProgramNameSet}
+          onSetName={handleSetProgramName}
           onConfirm={handleConfirmTraining}
           onRemoveExercise={handleRemoveExercise}
         />
       </section>
+
+      {isProgramNameDialogOpen ? (
+        <InputForm
+          title="Set program name"
+          description="Enter a name that will be shown on the saved program card."
+          value={programName}
+          placeholder="Program name"
+          inputAriaLabel="Program name"
+          cancelLabel="Cancel"
+          submitLabel="Save"
+          cancelAriaLabel="Cancel program name"
+          submitAriaLabel="Save program name"
+          disabled={!programName.trim()}
+          onSubmit={handleSubmitProgramName}
+          onChange={handleProgramNameChange}
+          onCancel={handleCloseProgramNameDialog}
+        />
+      ) : null}
     </main>
   );
 };
