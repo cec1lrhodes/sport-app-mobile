@@ -20,21 +20,21 @@ type MetricConfig = {
 
 export const metricConfig: Record<TrainingMetric, MetricConfig> = {
   sets: {
-    label: "Підходи",
+    label: "Sets",
     unit: "sets",
     min: 1,
     max: 10,
     step: 1,
   },
   reps: {
-    label: "Повтори",
+    label: "Reps",
     unit: "reps",
     min: 1,
     max: 30,
     step: 1,
   },
   weight: {
-    label: "Вага",
+    label: "Weight",
     unit: "kg",
     min: 0,
     max: 200,

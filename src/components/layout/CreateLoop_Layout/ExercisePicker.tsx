@@ -26,7 +26,7 @@ const ExercisePicker = ({
         id="exercise-heading"
         className="text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground"
       >
-        Вправа
+        Choose exercise
       </p>
 
       <div className="grid grid-cols-2 gap-2">
@@ -52,7 +52,7 @@ const ExercisePicker = ({
         <Input
           value={customExercise}
           onChange={(event) => onCustomExerciseChange(event.target.value)}
-          placeholder="Своя вправа..."
+          placeholder="Your exercise..."
           aria-label="Custom exercise name"
           className="h-11 border-border bg-background/70"
         />
@@ -65,7 +65,7 @@ const ExercisePicker = ({
           aria-label="Add custom exercise"
         >
           <Plus className="size-4" aria-hidden="true" />
-          Додати
+          Add
         </Button>
       </div>
     </section>

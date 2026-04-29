@@ -13,7 +13,7 @@ const CreateLoopHeader = () => {
         <ChevronLeft className="h-5 w-5" aria-hidden="true" />
       </Link>
       <p className="text-xs font-semibold uppercase tracking-[0.32em] text-muted-foreground">
-        Create loop
+        Create training loop
       </p>
     </header>
   );

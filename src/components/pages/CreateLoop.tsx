@@ -86,6 +86,12 @@ const CreateLoop = () => {
     setCustomExercise("");
   };
 
+  const handleRemoveExercise = (exerciseId: number) => {
+    setTrainingExercises((currentExercises) =>
+      currentExercises.filter((exercise) => exercise.id !== exerciseId),
+    );
+  };
+
   const handleConfirmTraining = () => {
     addLoop();
     setTrainingExercises([]);
@@ -118,12 +124,13 @@ const CreateLoop = () => {
           className="h-12 rounded-xl bg-foreground text-base font-semibold text-background hover:bg-foreground/90"
           aria-label="Add selected exercise to training"
         >
-          Додати до тренування
+          Add to training
         </Button>
 
         <TrainingList
           trainingExercises={trainingExercises}
           onConfirm={handleConfirmTraining}
+          onRemoveExercise={handleRemoveExercise}
         />
       </section>
     </main>

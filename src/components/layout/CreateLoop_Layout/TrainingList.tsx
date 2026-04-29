@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Check } from "lucide-react";
+import { Check, CircleX } from "lucide-react";
 
 import { Button } from "@/ui/button";
 import { formatExerciseLine, type TrainingExercise } from "./createLoopTypes";
@@ -7,9 +7,14 @@ import { formatExerciseLine, type TrainingExercise } from "./createLoopTypes";
 type TrainingListProps = {
   trainingExercises: TrainingExercise[];
   onConfirm: () => void;
+  onRemoveExercise: (exerciseId: number) => void;
 };
 
-const TrainingList = ({ trainingExercises, onConfirm }: TrainingListProps) => {
+const TrainingList = ({
+  trainingExercises,
+  onConfirm,
+  onRemoveExercise,
+}: TrainingListProps) => {
   const [isConfirmed, setIsConfirmed] = useState(false);
 
   useEffect(() => {
@@ -45,26 +50,34 @@ const TrainingList = ({ trainingExercises, onConfirm }: TrainingListProps) => {
           id="training-list-heading"
           className="text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground"
         >
-          Тренування
+          Training
         </p>
         <span className="text-xs font-semibold text-muted-foreground">
-          {trainingExercises.length} вправ
+          {trainingExercises.length} exercises
         </span>
       </div>
 
       <div className="mt-4 flex min-h-24 flex-col gap-2">
         {trainingExercises.length > 0 ? (
           trainingExercises.map((exercise) => (
-            <p
+            <div
               key={exercise.id}
-              className="rounded-xl border border-border bg-background/70 px-3 py-2 text-sm font-medium leading-6"
+              className="flex items-center justify-between gap-3 rounded-xl border border-border bg-background/70 px-3 py-2 text-sm font-medium leading-6"
             >
-              {formatExerciseLine(exercise)}
-            </p>
+              <p>{formatExerciseLine(exercise)}</p>
+              <button
+                type="button"
+                className="shrink-0 rounded-full text-muted-foreground transition-all duration-200 ease-out hover:scale-110 hover:text-destructive focus:outline-none focus:ring-2 focus:ring-destructive/50 focus:ring-offset-2 focus:ring-offset-background"
+                onClick={() => onRemoveExercise(exercise.id)}
+                aria-label={`Remove ${exercise.name} from training`}
+              >
+                <CircleX className="size-5" aria-hidden="true" />
+              </button>
+            </div>
           ))
         ) : (
           <p className="rounded-xl border border-dashed border-border px-3 py-6 text-center text-sm text-muted-foreground">
-            Додай першу вправу до тренування
+            Add your first exercise to training
           </p>
         )}
       </div>
@@ -76,11 +89,15 @@ const TrainingList = ({ trainingExercises, onConfirm }: TrainingListProps) => {
         className={`relative mt-4 h-12 w-full overflow-hidden rounded-xl bg-emerald-400/70 text-base font-semibold text-black hover:bg-emerald-500 ${
           isConfirmed ? "disabled:opacity-100" : ""
         }`}
-        aria-label={isConfirmed ? "Program confirmed" : "Confirm created program"}
+        aria-label={
+          isConfirmed ? "Program confirmed" : "Confirm created program"
+        }
       >
         <span
           className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${
-            isConfirmed ? "-translate-y-3 opacity-0" : "translate-y-0 opacity-100"
+            isConfirmed
+              ? "-translate-y-3 opacity-0"
+              : "translate-y-0 opacity-100"
           }`}
         >
           Confirm
