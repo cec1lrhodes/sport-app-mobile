@@ -10,10 +10,15 @@ import TrainingList from "@/components/layout/CreateLoop_Layout/TrainingList";
 import { InputForm } from "@/components/layout/common/InputForm";
 import {
   formatExerciseLine,
+  type TrainingDay,
   type TrainingExercise,
   type TrainingMetric,
   type TrainingMetrics,
 } from "@/components/layout/CreateLoop_Layout/createLoopTypes";
+import { NativeSelect, NativeSelectOption } from "@/ui/native-select";
+
+const weekOptions = Array.from({ length: 8 }, (_, index) => index + 1);
+const dayOptions: TrainingDay[] = ["A", "B", "C"];
 
 const CreateLoop = () => {
   const addLoop = useLoopsStore((state) => state.addLoop);
@@ -37,6 +42,8 @@ const CreateLoop = () => {
     reps: 8,
     weight: 70,
   });
+  const [selectedWeek, setSelectedWeek] = useState(1);
+  const [selectedDay, setSelectedDay] = useState<TrainingDay>("A");
   const [programName, setProgramName] = useState("");
   const [isProgramNameDialogOpen, setIsProgramNameDialogOpen] = useState(false);
   const [isProgramNameSet, setIsProgramNameSet] = useState(false);
@@ -84,6 +91,14 @@ const CreateLoop = () => {
     setCustomExercise(exerciseName);
   };
 
+  const handleWeekChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedWeek(Number(event.target.value));
+  };
+
+  const handleDayChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedDay(event.target.value as TrainingDay);
+  };
+
   const handleAddExercise = (exerciseName: string) => {
     const trimmedExerciseName = exerciseName.trim();
 
@@ -97,6 +112,8 @@ const CreateLoop = () => {
       {
         id: Date.now(),
         name: trimmedExerciseName,
+        week: selectedWeek,
+        day: selectedDay,
         sets: trainingMetrics.sets,
         reps: trainingMetrics.reps,
         weight: trainingMetrics.weight,
@@ -159,6 +176,34 @@ const CreateLoop = () => {
           onCustomExerciseChange={handleCustomExerciseChange}
           onAddExercise={handleAddExercise}
         />
+
+        <div className="grid grid-cols-2 gap-3">
+          <NativeSelect
+            value={selectedWeek}
+            onChange={handleWeekChange}
+            className="w-full"
+            aria-label="Select training week"
+          >
+            {weekOptions.map((week) => (
+              <NativeSelectOption key={week} value={week}>
+                Week {week}
+              </NativeSelectOption>
+            ))}
+          </NativeSelect>
+
+          <NativeSelect
+            value={selectedDay}
+            onChange={handleDayChange}
+            className="w-full"
+            aria-label="Select training day"
+          >
+            {dayOptions.map((day) => (
+              <NativeSelectOption key={day} value={day}>
+                Day {day}
+              </NativeSelectOption>
+            ))}
+          </NativeSelect>
+        </div>
 
         <MetricsSelector
           trainingMetrics={trainingMetrics}

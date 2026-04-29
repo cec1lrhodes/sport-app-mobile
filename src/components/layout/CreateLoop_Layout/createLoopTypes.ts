@@ -1,10 +1,14 @@
 export type TrainingExercise = {
   id: number;
   name: string;
+  week: number;
+  day: TrainingDay;
   sets: number;
   reps: number;
   weight: number;
 };
+
+export type TrainingDay = "A" | "B" | "C";
 
 export type TrainingMetric = "sets" | "reps" | "weight";
 
@@ -60,4 +64,4 @@ export const metricValueOptions: Record<TrainingMetric, number[]> = {
 };
 
 export const formatExerciseLine = (exercise: TrainingExercise) =>
-  `${exercise.name} ${exercise.sets} cycle, ${exercise.reps} reps, ${exercise.weight} kg`;
+  `${exercise.name} ${exercise.sets}x${exercise.reps} ${exercise.weight}kg`;
