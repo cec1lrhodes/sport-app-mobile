@@ -4,7 +4,7 @@ import {
   metricValueOptions,
   type TrainingMetric,
   type TrainingMetrics,
-} from "./createLoopTypes";
+} from "./loop_utils/createLoopTypes";
 
 type MetricsSelectorProps = {
   trainingMetrics: TrainingMetrics;

@@ -6,7 +6,7 @@ import {
   CarouselContent,
   CarouselItem,
 } from "@/ui/carousel";
-import type { TrainingMetric } from "./createLoopTypes";
+import type { TrainingMetric } from "./loop_utils/createLoopTypes";
 
 type MetricCarouselProps = {
   metric: TrainingMetric;

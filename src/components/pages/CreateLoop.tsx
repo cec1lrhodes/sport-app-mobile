@@ -14,7 +14,7 @@ import {
   type TrainingExercise,
   type TrainingMetric,
   type TrainingMetrics,
-} from "@/components/layout/CreateLoop_Layout/createLoopTypes";
+} from "@/components/layout/CreateLoop_Layout/loop_utils/createLoopTypes";
 import { NativeSelect, NativeSelectOption } from "@/ui/native-select";
 
 const weekOptions = Array.from({ length: 8 }, (_, index) => index + 1);
