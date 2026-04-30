@@ -158,7 +158,15 @@ const CreateLoop = () => {
   };
 
   const handleConfirmTraining = () => {
-    addLoop();
+    if (trainingExercises.length === 0) {
+      return;
+    }
+
+    const programWeeks = Math.max(
+      ...trainingExercises.map((exercise) => exercise.week),
+    );
+
+    addLoop(programWeeks, trainingExercises);
     setTrainingExercises([]);
     setCustomExercise("");
   };

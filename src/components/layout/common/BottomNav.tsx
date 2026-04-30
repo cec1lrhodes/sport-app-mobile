@@ -12,7 +12,7 @@ type NavItem = {
 const navItems: NavItem[] = [
   { to: "/", label: "Main" },
   { to: "/second", label: "Second", matchPrefix: "/second" },
-  { to: "/third", label: "Third", matchPrefix: "/third" },
+  { to: "/third", label: "Journal", matchPrefix: "/third" },
 ];
 
 const isActivePath = (pathname: string, item: NavItem): boolean => {

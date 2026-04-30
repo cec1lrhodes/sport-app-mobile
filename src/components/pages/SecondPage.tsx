@@ -1,10 +1,11 @@
 import { Link } from "@tanstack/react-router";
+import { type KeyboardEvent } from "react";
 
 import { Button } from "@/ui/button";
 import { useLoopsStore } from "@/store/useLoopsStore";
+import { cn } from "@/lib/utils";
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
@@ -13,6 +14,24 @@ import {
 
 const SecondPage = () => {
   const loops = useLoopsStore((state) => state.loops);
+  const selectedLoopId = useLoopsStore((state) => state.selectedLoopId);
+  const setSelectedLoopId = useLoopsStore((state) => state.setSelectedLoopId);
+
+  const handleLoopSelect = (loopId: number) => {
+    setSelectedLoopId(loopId);
+  };
+
+  const handleLoopKeyDown = (
+    event: KeyboardEvent<HTMLDivElement>,
+    loopId: number,
+  ) => {
+    if (event.key !== "Enter" && event.key !== " ") {
+      return;
+    }
+
+    event.preventDefault();
+    handleLoopSelect(loopId);
+  };
 
   return (
     <main className="min-h-screen bg-background px-4 pb-36 pt-8 text-foreground">
@@ -43,44 +62,47 @@ const SecondPage = () => {
             loops
           </p>
 
-          {loops.map((loop) => (
-            <Card
-              key={loop.id}
-              className="border border-border bg-card/90 shadow-2xl shadow-black/20"
-            >
-              <CardHeader>
-                <CardTitle>{loop.title}</CardTitle>
-                <CardDescription>{loop.description}</CardDescription>
-                <CardAction>
-                  <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-300">
-                    {loop.status}
-                  </span>
-                </CardAction>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-3 gap-2 rounded-xl border border-border bg-background/70 p-3 text-center">
-                  <div>
-                    <p className="text-lg font-bold">{loop.exercisesCount}</p>
-                    <p className="text-[0.7rem] uppercase tracking-wide text-muted-foreground">
-                      Exercises
-                    </p>
+          {loops.map((loop) => {
+            const isSelected = selectedLoopId === loop.id;
+
+            return (
+              <Card
+                key={loop.id}
+                role="button"
+                tabIndex={0}
+                aria-label={`Select ${loop.title} program`}
+                aria-pressed={isSelected}
+                onClick={() => handleLoopSelect(loop.id)}
+                onKeyDown={(event) => handleLoopKeyDown(event, loop.id)}
+                className={cn(
+                  "cursor-pointer border border-border bg-card/90 shadow-2xl shadow-black/20 transition hover:border-primary/50 hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/70",
+                  isSelected &&
+                    "border-primary bg-primary/10 shadow-primary/20 ring-2 ring-primary/60",
+                )}
+              >
+                <CardHeader>
+                  <CardTitle>{loop.title}</CardTitle>
+                  <CardDescription>{loop.createdAt}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-2 rounded-xl border border-border bg-background/70 p-3 text-center">
+                    <div>
+                      <p className="text-lg font-bold">{loop.exercisesCount}</p>
+                      <p className="text-[0.7rem] uppercase tracking-wide text-muted-foreground">
+                        Exercises
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-lg font-bold">{loop.weeks}</p>
+                      <p className="text-[0.7rem] uppercase tracking-wide text-muted-foreground">
+                        Weeks
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-lg font-bold">{loop.weeks}</p>
-                    <p className="text-[0.7rem] uppercase tracking-wide text-muted-foreground">
-                      Weeks
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-lg font-bold">{loop.target}</p>
-                    <p className="text-[0.7rem] uppercase tracking-wide text-muted-foreground">
-                      Target
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            );
+          })}
         </section>
 
         <Button
