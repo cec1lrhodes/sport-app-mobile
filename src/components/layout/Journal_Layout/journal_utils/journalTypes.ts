@@ -9,6 +9,7 @@ export type JournalWeek = {
 };
 
 export type SelectedTraining = {
+  loopId: number;
   week: number;
   day: TrainingDay;
   exercises: TrainingExercise[];

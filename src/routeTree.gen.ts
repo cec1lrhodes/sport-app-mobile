@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ThirdRouteImport } from './routes/third'
 import { Route as SecondRouteImport } from './routes/second'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as CreateLoopRouteImport } from './routes/create-loop'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -22,6 +23,11 @@ const ThirdRoute = ThirdRouteImport.update({
 const SecondRoute = SecondRouteImport.update({
   id: '/second',
   path: '/second',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CreateLoopRoute = CreateLoopRouteImport.update({
@@ -38,12 +44,14 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/create-loop': typeof CreateLoopRoute
+  '/profile': typeof ProfileRoute
   '/second': typeof SecondRoute
   '/third': typeof ThirdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/create-loop': typeof CreateLoopRoute
+  '/profile': typeof ProfileRoute
   '/second': typeof SecondRoute
   '/third': typeof ThirdRoute
 }
@@ -51,20 +59,22 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/create-loop': typeof CreateLoopRoute
+  '/profile': typeof ProfileRoute
   '/second': typeof SecondRoute
   '/third': typeof ThirdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/create-loop' | '/second' | '/third'
+  fullPaths: '/' | '/create-loop' | '/profile' | '/second' | '/third'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/create-loop' | '/second' | '/third'
-  id: '__root__' | '/' | '/create-loop' | '/second' | '/third'
+  to: '/' | '/create-loop' | '/profile' | '/second' | '/third'
+  id: '__root__' | '/' | '/create-loop' | '/profile' | '/second' | '/third'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CreateLoopRoute: typeof CreateLoopRoute
+  ProfileRoute: typeof ProfileRoute
   SecondRoute: typeof SecondRoute
   ThirdRoute: typeof ThirdRoute
 }
@@ -83,6 +93,13 @@ declare module '@tanstack/react-router' {
       path: '/second'
       fullPath: '/second'
       preLoaderRoute: typeof SecondRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/create-loop': {
@@ -105,6 +122,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CreateLoopRoute: CreateLoopRoute,
+  ProfileRoute: ProfileRoute,
   SecondRoute: SecondRoute,
   ThirdRoute: ThirdRoute,
 }

@@ -3,7 +3,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 
 type NavItem = {
-  to: "/" | "/second" | "/third";
+  to: "/" | "/second" | "/third" | "/profile";
   label: string;
 
   matchPrefix?: string;
@@ -13,6 +13,7 @@ const navItems: NavItem[] = [
   { to: "/", label: "Main" },
   { to: "/second", label: "Second", matchPrefix: "/second" },
   { to: "/third", label: "Journal", matchPrefix: "/third" },
+  { to: "/profile", label: "Profile", matchPrefix: "/profile" },
 ];
 
 const isActivePath = (pathname: string, item: NavItem): boolean => {
@@ -29,7 +30,7 @@ const BottomNav = () => {
     <footer className="fixed inset-x-0 bottom-0 z-10 border-t border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80">
       <nav
         aria-label="Primary"
-        className="mx-auto grid h-16 w-full max-w-sm grid-cols-3 gap-3 px-4 py-3"
+        className="mx-auto grid h-16 w-full max-w-sm grid-cols-4 gap-3 px-4 py-3"
       >
         {navItems.map((item) => {
           const isActive = isActivePath(pathname, item);

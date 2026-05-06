@@ -7,9 +7,10 @@ import type {
 import JournalHeader from "@/components/layout/Journal_Layout/JournalHeader";
 import JournalTrainingDialog from "@/components/layout/Journal_Layout/JournalTrainingDialog";
 import JournalWeekList from "@/components/layout/Journal_Layout/JournalWeekList";
-import type { SelectedTraining } from "@/components/layout/Journal_Layout/journalTypes";
-import { buildJournalWeeks } from "@/components/layout/Journal_Layout/journalUtils";
+import type { SelectedTraining } from "@/components/layout/Journal_Layout/journal_utils/journalTypes";
+import { buildJournalWeeks } from "@/components/layout/Journal_Layout/journal_utils/journalUtils";
 import { cn } from "@/lib/utils";
+import { useJournalStore } from "@/store/useJournalStore";
 import { useLoopsStore } from "@/store/useLoopsStore";
 import { Card } from "@/ui/card";
 
@@ -18,10 +19,13 @@ const ThirdPage = () => {
   const selectedLoopId = useLoopsStore((state) => state.selectedLoopId);
   const selectedLoop =
     loops.find((loop) => loop.id === selectedLoopId) ?? loops[0] ?? null;
+  const setResults = useJournalStore((state) => state.setResults);
+  const handleSetResultChange = useJournalStore(
+    (state) => state.handleSetResultChange,
+  );
   const [openWeek, setOpenWeek] = useState<number | null>(1);
   const [selectedTraining, setSelectedTraining] =
     useState<SelectedTraining | null>(null);
-  const [setResults, setSetResults] = useState<Record<string, string>>({});
 
   const journalWeeks = useMemo(() => {
     if (!selectedLoop) {
@@ -40,7 +44,12 @@ const ThirdPage = () => {
     day: TrainingDay,
     exercises: TrainingExercise[],
   ) => {
+    if (!selectedLoop) {
+      return;
+    }
+
     setSelectedTraining({
+      loopId: selectedLoop.id,
       week,
       day,
       exercises,
@@ -49,13 +58,6 @@ const ThirdPage = () => {
 
   const handleCloseTraining = () => {
     setSelectedTraining(null);
-  };
-
-  const handleSetResultChange = (resultKey: string, value: string) => {
-    setSetResults((currentResults) => ({
-      ...currentResults,
-      [resultKey]: value,
-    }));
   };
 
   return (
@@ -73,8 +75,10 @@ const ThirdPage = () => {
 
         {selectedLoop ? (
           <JournalWeekList
+            loopId={selectedLoop.id}
             journalWeeks={journalWeeks}
             openWeek={openWeek}
+            setResults={setResults}
             onToggleWeek={handleToggleWeek}
             onOpenTraining={handleOpenTraining}
           />

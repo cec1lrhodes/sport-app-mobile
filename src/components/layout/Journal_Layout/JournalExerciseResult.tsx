@@ -1,16 +1,25 @@
 import {
   formatExerciseLine,
+  type TrainingDay,
   type TrainingExercise,
 } from "@/components/layout/CreateLoop_Layout/loop_utils/createLoopTypes";
 import { Input } from "@/ui/input";
 
+import { getJournalSetResultKey } from "./journal_utils/journalUtils";
+
 type JournalExerciseResultProps = {
+  loopId: number;
+  week: number;
+  day: TrainingDay;
   exercise: TrainingExercise;
   setResults: Record<string, string>;
   onSetResultChange: (resultKey: string, value: string) => void;
 };
 
 const JournalExerciseResult = ({
+  loopId,
+  week,
+  day,
   exercise,
   setResults,
   onSetResultChange,
@@ -22,7 +31,13 @@ const JournalExerciseResult = ({
       <div className="grid grid-cols-3 gap-3">
         {Array.from({ length: exercise.sets }, (_, index) => {
           const setNumber = index + 1;
-          const resultKey = `${exercise.id}-${setNumber}`;
+          const resultKey = getJournalSetResultKey(
+            loopId,
+            week,
+            day,
+            exercise.id,
+            setNumber,
+          );
 
           return (
             <label

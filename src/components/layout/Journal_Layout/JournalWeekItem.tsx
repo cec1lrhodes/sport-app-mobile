@@ -6,13 +6,18 @@ import type {
 } from "@/components/layout/CreateLoop_Layout/loop_utils/createLoopTypes";
 import { cn } from "@/lib/utils";
 
-import type { JournalWeek } from "./journalTypes";
-import { trainingDays } from "./journalUtils";
+import type { JournalWeek } from "./journal_utils/journalTypes";
+import {
+  isJournalTrainingCompleted,
+  trainingDays,
+} from "./journal_utils/journalUtils";
 import JournalTrainingDayButton from "./JournalTrainingDayButton";
 
 type JournalWeekItemProps = {
+  loopId: number;
   weekGroup: JournalWeek;
   isOpen: boolean;
+  setResults: Record<string, string>;
   onToggleWeek: (week: number) => void;
   onOpenTraining: (
     week: number,
@@ -22,8 +27,10 @@ type JournalWeekItemProps = {
 };
 
 const JournalWeekItem = ({
+  loopId,
   weekGroup,
   isOpen,
+  setResults,
   onToggleWeek,
   onOpenTraining,
 }: JournalWeekItemProps) => {
@@ -63,6 +70,13 @@ const JournalWeekItem = ({
                 week={weekGroup.week}
                 day={day}
                 exercises={weekGroup.days[day]}
+                isCompleted={isJournalTrainingCompleted(
+                  loopId,
+                  weekGroup.week,
+                  day,
+                  weekGroup.days[day],
+                  setResults,
+                )}
                 onOpenTraining={onOpenTraining}
               />
             ))}

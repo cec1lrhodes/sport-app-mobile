@@ -4,12 +4,14 @@ import type {
 } from "@/components/layout/CreateLoop_Layout/loop_utils/createLoopTypes";
 import { Card } from "@/ui/card";
 
-import type { JournalWeek } from "./journalTypes";
+import type { JournalWeek } from "./journal_utils/journalTypes";
 import JournalWeekItem from "./JournalWeekItem";
 
 type JournalWeekListProps = {
+  loopId: number;
   journalWeeks: JournalWeek[];
   openWeek: number | null;
+  setResults: Record<string, string>;
   onToggleWeek: (week: number) => void;
   onOpenTraining: (
     week: number,
@@ -19,8 +21,10 @@ type JournalWeekListProps = {
 };
 
 const JournalWeekList = ({
+  loopId,
   journalWeeks,
   openWeek,
+  setResults,
   onToggleWeek,
   onOpenTraining,
 }: JournalWeekListProps) => {
@@ -29,8 +33,10 @@ const JournalWeekList = ({
       {journalWeeks.map((weekGroup) => (
         <JournalWeekItem
           key={weekGroup.week}
+          loopId={loopId}
           weekGroup={weekGroup}
           isOpen={openWeek === weekGroup.week}
+          setResults={setResults}
           onToggleWeek={onToggleWeek}
           onOpenTraining={onOpenTraining}
         />

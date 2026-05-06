@@ -2,7 +2,7 @@ import { X } from "lucide-react";
 
 import { Card } from "@/ui/card";
 
-import type { SelectedTraining } from "./journalTypes";
+import type { SelectedTraining } from "./journal_utils/journalTypes";
 import JournalExerciseResult from "./JournalExerciseResult";
 
 type JournalTrainingDialogProps = {
@@ -56,6 +56,9 @@ const JournalTrainingDialog = ({
             selectedTraining.exercises.map((exercise) => (
               <JournalExerciseResult
                 key={exercise.id}
+                loopId={selectedTraining.loopId}
+                week={selectedTraining.week}
+                day={selectedTraining.day}
                 exercise={exercise}
                 setResults={setResults}
                 onSetResultChange={onSetResultChange}
