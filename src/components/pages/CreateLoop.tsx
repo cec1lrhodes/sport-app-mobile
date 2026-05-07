@@ -1,61 +1,38 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { type ChangeEvent, type FormEvent, useEffect, useState } from "react";
 
 import { Button } from "@/ui/button";
 import { useLoopsStore } from "@/store/useLoopsStore";
-import exerciseBase from "@/data/exercise_base";
 import CreateLoopHeader from "@/components/layout/CreateLoop_Layout/CreateLoopHeader";
 import ExercisePicker from "@/components/layout/CreateLoop_Layout/ExercisePicker";
 import MetricsSelector from "@/components/layout/CreateLoop_Layout/MetricsSelector";
 import TrainingList from "@/components/layout/CreateLoop_Layout/TrainingList";
+import TrainingScheduleSelector from "@/components/layout/CreateLoop_Layout/TrainingScheduleSelector";
+import { useCreateLoopForm } from "@/components/layout/CreateLoop_Layout/loop_utils/useCreateLoopForm";
 import { InputForm } from "@/components/layout/common/InputForm";
-import {
-  formatExerciseLine,
-  type TrainingDay,
-  type TrainingExercise,
-  type TrainingMetric,
-  type TrainingMetrics,
-} from "@/components/layout/CreateLoop_Layout/loop_utils/createLoopTypes";
-import { NativeSelect, NativeSelectOption } from "@/ui/native-select";
-
-const weekOptions = Array.from({ length: 8 }, (_, index) => index + 1);
-const dayOptions: TrainingDay[] = ["A", "B", "C"];
 
 const CreateLoop = () => {
   const addLoop = useLoopsStore((state) => state.addLoop);
-  const currentProgramTitle = useLoopsStore((state) => state.loopDraft.title);
-  const handleLoopDraftChange = useLoopsStore(
-    (state) => state.handleLoopDraftChange,
-  );
-  const exerciseOptions = useMemo(
-    () => Array.from(new Set(exerciseBase.map((exercise) => exercise.name))),
-    [],
-  );
-  const [selectedExercise, setSelectedExercise] = useState(
-    exerciseOptions[0] ?? "",
-  );
-  const [customExercise, setCustomExercise] = useState("");
-  const [trainingExercises, setTrainingExercises] = useState<
-    TrainingExercise[]
-  >([]);
-  const [trainingMetrics, setTrainingMetrics] = useState<TrainingMetrics>({
-    sets: 3,
-    reps: 8,
-    weight: 70,
-  });
-  const [selectedWeek, setSelectedWeek] = useState(1);
-  const [selectedDay, setSelectedDay] = useState<TrainingDay>("A");
+  const {
+    exerciseOptions,
+    selectedExercise,
+    customExercise,
+    trainingExercises,
+    trainingMetrics,
+    selectedWeek,
+    selectedDay,
+    programWeeks,
+    setSelectedExercise,
+    setCustomExercise,
+    setSelectedWeek,
+    setSelectedDay,
+    handleMetricValueChange,
+    handleAddExercise,
+    handleRemoveExercise,
+    resetTraining,
+  } = useCreateLoopForm();
   const [programName, setProgramName] = useState("");
   const [isProgramNameDialogOpen, setIsProgramNameDialogOpen] = useState(false);
   const [isProgramNameSet, setIsProgramNameSet] = useState(false);
-
-  useEffect(() => {
-    handleLoopDraftChange(
-      "exercise",
-      trainingExercises.map(formatExerciseLine).join("\n"),
-    );
-    handleLoopDraftChange("repetitions", String(trainingMetrics.reps));
-    handleLoopDraftChange("weight", String(trainingMetrics.weight));
-  }, [handleLoopDraftChange, trainingExercises, trainingMetrics]);
 
   useEffect(() => {
     if (!isProgramNameSet) {
@@ -71,18 +48,6 @@ const CreateLoop = () => {
     };
   }, [isProgramNameSet]);
 
-  const handleMetricValueChange = useCallback(
-    (metric: TrainingMetric, value: number) => {
-      setTrainingMetrics((currentMetrics) => {
-        return {
-          ...currentMetrics,
-          [metric]: value,
-        };
-      });
-    },
-    [],
-  );
-
   const handleSelectExercise = (exerciseName: string) => {
     setSelectedExercise(exerciseName);
   };
@@ -91,51 +56,11 @@ const CreateLoop = () => {
     setCustomExercise(exerciseName);
   };
 
-  const handleWeekChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedWeek(Number(event.target.value));
-  };
-
-  const handleDayChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedDay(event.target.value as TrainingDay);
-  };
-
-  const handleAddExercise = (exerciseName: string) => {
-    const trimmedExerciseName = exerciseName.trim();
-
-    if (!trimmedExerciseName) {
-      return;
-    }
-
-    setSelectedExercise(trimmedExerciseName);
-    setTrainingExercises((currentExercises) => [
-      ...currentExercises,
-      {
-        id: Date.now(),
-        name: trimmedExerciseName,
-        week: selectedWeek,
-        day: selectedDay,
-        sets: trainingMetrics.sets,
-        reps: trainingMetrics.reps,
-        weight: trainingMetrics.weight,
-      },
-    ]);
-    setCustomExercise("");
-  };
-
-  const handleRemoveExercise = (exerciseId: number) => {
-    setTrainingExercises((currentExercises) =>
-      currentExercises.filter((exercise) => exercise.id !== exerciseId),
-    );
-  };
-
   const handleSetProgramName = () => {
-    setProgramName(currentProgramTitle);
     setIsProgramNameDialogOpen(true);
   };
 
-  const handleProgramNameChange = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleProgramNameChange = (event: ChangeEvent<HTMLInputElement>) => {
     setProgramName(event.target.value);
   };
 
@@ -143,7 +68,7 @@ const CreateLoop = () => {
     setIsProgramNameDialogOpen(false);
   };
 
-  const handleSubmitProgramName = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmitProgramName = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const trimmedProgramName = programName.trim();
@@ -152,7 +77,7 @@ const CreateLoop = () => {
       return;
     }
 
-    handleLoopDraftChange("title", trimmedProgramName);
+    setProgramName(trimmedProgramName);
     setIsProgramNameDialogOpen(false);
     setIsProgramNameSet(true);
   };
@@ -162,13 +87,15 @@ const CreateLoop = () => {
       return;
     }
 
-    const programWeeks = Math.max(
-      ...trainingExercises.map((exercise) => exercise.week),
-    );
-
-    addLoop(programWeeks, trainingExercises);
-    setTrainingExercises([]);
-    setCustomExercise("");
+    addLoop({
+      title: programName,
+      weeks: programWeeks,
+      exercises: trainingExercises,
+      targetWeight: trainingMetrics.weight,
+    });
+    resetTraining();
+    setProgramName("");
+    setIsProgramNameSet(false);
   };
 
   return (
@@ -185,33 +112,12 @@ const CreateLoop = () => {
           onAddExercise={handleAddExercise}
         />
 
-        <div className="grid grid-cols-2 gap-3">
-          <NativeSelect
-            value={selectedWeek}
-            onChange={handleWeekChange}
-            className="w-full"
-            aria-label="Select training week"
-          >
-            {weekOptions.map((week) => (
-              <NativeSelectOption key={week} value={week}>
-                Week {week}
-              </NativeSelectOption>
-            ))}
-          </NativeSelect>
-
-          <NativeSelect
-            value={selectedDay}
-            onChange={handleDayChange}
-            className="w-full"
-            aria-label="Select training day"
-          >
-            {dayOptions.map((day) => (
-              <NativeSelectOption key={day} value={day}>
-                Day {day}
-              </NativeSelectOption>
-            ))}
-          </NativeSelect>
-        </div>
+        <TrainingScheduleSelector
+          selectedWeek={selectedWeek}
+          selectedDay={selectedDay}
+          onWeekChange={setSelectedWeek}
+          onDayChange={setSelectedDay}
+        />
 
         <MetricsSelector
           trainingMetrics={trainingMetrics}

@@ -1,13 +1,11 @@
 import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
 
-import type {
-  TrainingDay,
-  TrainingExercise,
+import {
+  formatExerciseLine,
+  type TrainingDay,
+  type TrainingExercise,
 } from "@/components/layout/CreateLoop_Layout/loop_utils/createLoopTypes";
-
-export type LoopDraftField = "title" | "exercise" | "repetitions" | "weight";
-
-export type LoopDraft = Record<LoopDraftField, string>;
 
 export type LoopCard = {
   id: number;
@@ -21,21 +19,25 @@ export type LoopCard = {
   status: string;
 };
 
+type AddLoopPayload = {
+  title: string;
+  weeks: number;
+  exercises: TrainingExercise[];
+  targetWeight: number;
+};
+
 type LoopsStore = {
-  loopDraft: LoopDraft;
   loops: LoopCard[];
+  customLoops: LoopCard[];
   selectedLoopId: number | null;
-  addLoop: (weeks: number, exercises?: TrainingExercise[]) => void;
-  handleLoopDraftChange: (field: LoopDraftField, value: string) => void;
+  addLoop: (payload: AddLoopPayload) => void;
   setSelectedLoopId: (loopId: number) => void;
 };
 
-const initialLoopDraft: LoopDraft = {
-  title: "",
-  exercise: "",
-  repetitions: "",
-  weight: "",
-};
+type PersistedLoopsState = Pick<
+  LoopsStore,
+  "customLoops" | "selectedLoopId"
+>;
 
 const trainingDays: TrainingDay[] = ["A", "B", "C"];
 
@@ -81,6 +83,8 @@ const initialLoops: LoopCard[] = [
   },
 ];
 
+const getLoops = (customLoops: LoopCard[]) => [...initialLoops, ...customLoops];
+
 const getFormattedDate = () => {
   const currentDate = new Date();
   const date = currentDate.toLocaleDateString("uk-UA", {
@@ -97,67 +101,77 @@ const getFormattedDate = () => {
   return `${date} - ${time}`;
 };
 
-export const useLoopsStore = create<LoopsStore>()((set) => ({
-  loopDraft: initialLoopDraft,
-  loops: initialLoops,
-  selectedLoopId: initialLoops[0]?.id ?? null,
-  addLoop: (weeks, exercises) =>
-    set((currentState) => {
-      const exercise = currentState.loopDraft.exercise.trim();
-      const title = currentState.loopDraft.title.trim();
-      const exerciseLines = exercise
-        .split("\n")
-        .map((exerciseLine) => exerciseLine.trim())
-        .filter(Boolean);
+const createLoopCard = ({
+  title,
+  weeks,
+  exercises,
+  targetWeight,
+}: AddLoopPayload): LoopCard => {
+  const exerciseLines = exercises.map(formatExerciseLine);
+  const firstExerciseTitle = exercises[0]?.name.trim();
 
-      if (exerciseLines.length === 0) {
-        return currentState;
-      }
+  return {
+    id: Date.now(),
+    title:
+      title.trim() ||
+      (exercises.length > 1 ? "Custom program" : firstExerciseTitle) ||
+      "New program",
+    description: exerciseLines.join(" / "),
+    createdAt: getFormattedDate(),
+    exercisesCount: exercises.length,
+    weeks,
+    exercises,
+    target: targetWeight ? `${targetWeight} kg` : "RPE 8",
+    status: "Saved",
+  };
+};
 
-      const firstExerciseTitle = exerciseLines[0]?.replace(
-        /\s+\d+(?:\.\d+)? cycle.*$/,
-        "",
-      );
-      const weight = currentState.loopDraft.weight.trim();
-      const trainingExercises =
-        exercises && exercises.length > 0
-          ? exercises
-          : createTrainingExercisesFromLines(exerciseLines, weeks);
-      const exercisesCount = trainingExercises.length;
-      const loopId = Date.now();
+export const useLoopsStore = create<LoopsStore>()(
+  persist<LoopsStore, [], [], PersistedLoopsState>(
+    (set) => ({
+      loops: initialLoops,
+      customLoops: [],
+      selectedLoopId: initialLoops[0]?.id ?? null,
+      addLoop: (payload) =>
+        set((currentState) => {
+          if (payload.exercises.length === 0) {
+            return currentState;
+          }
 
-      return {
-        loopDraft: initialLoopDraft,
-        selectedLoopId: loopId,
-        loops: [
-          ...currentState.loops,
-          {
-            id: loopId,
-            title:
-              title ||
-              (exerciseLines.length > 1
-                ? "Custom programm"
-                : firstExerciseTitle || "New programm"),
-            description: exerciseLines.join(" / "),
-            createdAt: getFormattedDate(),
-            exercisesCount,
-            weeks,
-            exercises: trainingExercises,
-            target: weight ? `${weight} kg` : "RPE 8",
-            status: "Saved",
-          },
-        ],
-      };
+          const loop = createLoopCard(payload);
+          const customLoops = [...currentState.customLoops, loop];
+
+          return {
+            customLoops,
+            loops: getLoops(customLoops),
+            selectedLoopId: loop.id,
+          };
+        }),
+      setSelectedLoopId: (loopId) =>
+        set(() => ({
+          selectedLoopId: loopId,
+        })),
     }),
-  handleLoopDraftChange: (field, value) =>
-    set((currentState) => ({
-      loopDraft: {
-        ...currentState.loopDraft,
-        [field]: value,
+    {
+      name: "sport-app-custom-loops",
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        customLoops: state.customLoops,
+        selectedLoopId: state.selectedLoopId,
+      }),
+      merge: (persistedState, currentState) => {
+        const persistedLoopsState =
+          persistedState as Partial<PersistedLoopsState> | null;
+        const customLoops = persistedLoopsState?.customLoops ?? [];
+
+        return {
+          ...currentState,
+          customLoops,
+          loops: getLoops(customLoops),
+          selectedLoopId:
+            persistedLoopsState?.selectedLoopId ?? currentState.selectedLoopId,
+        };
       },
-    })),
-  setSelectedLoopId: (loopId) =>
-    set(() => ({
-      selectedLoopId: loopId,
-    })),
-}));
+    },
+  ),
+);
