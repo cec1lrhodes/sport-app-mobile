@@ -51,7 +51,7 @@ const ExerciseForm = ({
           <AccordionItem
             key={item.id}
             value={String(item.id)}
-            className="rounded-2xl border-none bg-secondary/60 px-4 py-3 transition-colors not-last:border-b-0 hover:bg-secondary/80"
+            className="rounded-2xl border-none bg-secondary/60 px-4 py-3 transition-colors not-last:border-b-0 hover:bg-secondary/70"
           >
             <AccordionTrigger
               className={cn(

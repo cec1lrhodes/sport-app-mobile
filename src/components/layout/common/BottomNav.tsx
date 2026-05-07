@@ -1,19 +1,28 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 
 import { cn } from "@/lib/utils";
+import { User } from "lucide-react";
 
 type NavItem = {
   to: "/" | "/second" | "/third" | "/profile";
   label: string;
 
   matchPrefix?: string;
+  icon?: React.ReactNode;
 };
 
 const navItems: NavItem[] = [
   { to: "/", label: "Main" },
   { to: "/second", label: "Second", matchPrefix: "/second" },
   { to: "/third", label: "Journal", matchPrefix: "/third" },
-  { to: "/profile", label: "Profile", matchPrefix: "/profile" },
+  {
+    to: "/profile",
+    label: "Profile",
+    matchPrefix: "/profile",
+    icon: (
+      <User className="size-5 {isActive ? 'text-black' : 'text-muted-foreground'}" />
+    ),
+  },
 ];
 
 const isActivePath = (pathname: string, item: NavItem): boolean => {
@@ -44,11 +53,13 @@ const BottomNav = () => {
               className={cn(
                 "flex h-11 items-center justify-center rounded-lg text-sm font-medium text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 isActive
-                  ? "bg-orange-500"
+                  ? "bg-white text-black"
                   : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground",
               )}
             >
-              <span className="uppercase tracking-wide">{label}</span>
+              <span className="uppercase tracking-wide">
+                {item.icon ?? label}
+              </span>
             </Link>
           );
         })}
