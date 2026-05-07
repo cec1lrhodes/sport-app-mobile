@@ -34,10 +34,7 @@ type LoopsStore = {
   setSelectedLoopId: (loopId: number) => void;
 };
 
-type PersistedLoopsState = Pick<
-  LoopsStore,
-  "customLoops" | "selectedLoopId"
->;
+type PersistedLoopsState = Pick<LoopsStore, "customLoops" | "selectedLoopId">;
 
 const trainingDays: TrainingDay[] = ["A", "B", "C"];
 

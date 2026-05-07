@@ -49,16 +49,20 @@ export const getJournalSetResultKey = (
   setNumber: number,
 ) => `${loopId}-${week}-${day}-${exerciseId}-${setNumber}`;
 
-export const isJournalTrainingCompleted = (
+export type JournalTrainingStatus = "pending" | "completed" | "mismatched";
+
+export const getJournalTrainingStatus = (
   loopId: number,
   week: number,
   day: TrainingDay,
   exercises: TrainingExercise[],
   setResults: Record<string, string>,
-) => {
+): JournalTrainingStatus => {
   if (exercises.length === 0) {
-    return false;
+    return "pending";
   }
+
+  let hasRepsMismatch = false;
 
   for (const exercise of exercises) {
     for (let index = 0; index < exercise.sets; index += 1) {
@@ -70,12 +74,30 @@ export const isJournalTrainingCompleted = (
         exercise.id,
         setNumber,
       );
+      const result = setResults[resultKey]?.trim();
 
-      if (!setResults[resultKey]?.trim()) {
-        return false;
+      if (!result) {
+        return "pending";
+      }
+
+      if (Number(result) !== exercise.reps) {
+        hasRepsMismatch = true;
       }
     }
   }
 
-  return true;
+  return hasRepsMismatch ? "mismatched" : "completed";
+};
+
+export const isJournalTrainingCompleted = (
+  loopId: number,
+  week: number,
+  day: TrainingDay,
+  exercises: TrainingExercise[],
+  setResults: Record<string, string>,
+) => {
+  return (
+    getJournalTrainingStatus(loopId, week, day, exercises, setResults) ===
+    "completed"
+  );
 };

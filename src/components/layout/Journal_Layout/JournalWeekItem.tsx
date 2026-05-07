@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 
 import type { JournalWeek } from "./journal_utils/journalTypes";
 import {
-  isJournalTrainingCompleted,
+  getJournalTrainingStatus,
   trainingDays,
 } from "./journal_utils/journalUtils";
 import JournalTrainingDayButton from "./JournalTrainingDayButton";
@@ -70,7 +70,7 @@ const JournalWeekItem = ({
                 week={weekGroup.week}
                 day={day}
                 exercises={weekGroup.days[day]}
-                isCompleted={isJournalTrainingCompleted(
+                status={getJournalTrainingStatus(
                   loopId,
                   weekGroup.week,
                   day,
