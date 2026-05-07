@@ -1,8 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { type KeyboardEvent } from "react";
+import { type KeyboardEvent, useState } from "react";
 
 import { Button } from "@/ui/button";
-import { useLoopsStore } from "@/store/useLoopsStore";
+import { type LoopCard, useLoopsStore } from "@/store/useLoopsStore";
 import { cn } from "@/lib/utils";
 import {
   Card,
@@ -11,11 +11,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/ui/card";
+import { X } from "lucide-react";
 
 const SecondPage = () => {
   const loops = useLoopsStore((state) => state.loops);
   const selectedLoopId = useLoopsStore((state) => state.selectedLoopId);
   const setSelectedLoopId = useLoopsStore((state) => state.setSelectedLoopId);
+  const deleteLoop = useLoopsStore((state) => state.deleteLoop);
+  const [loopToDelete, setLoopToDelete] = useState<LoopCard | null>(null);
 
   const handleLoopSelect = (loopId: number) => {
     setSelectedLoopId(loopId);
@@ -31,6 +34,15 @@ const SecondPage = () => {
 
     event.preventDefault();
     handleLoopSelect(loopId);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (!loopToDelete) {
+      return;
+    }
+
+    deleteLoop(loopToDelete.id);
+    setLoopToDelete(null);
   };
 
   return (
@@ -75,12 +87,24 @@ const SecondPage = () => {
                 onClick={() => handleLoopSelect(loop.id)}
                 onKeyDown={(event) => handleLoopKeyDown(event, loop.id)}
                 className={cn(
-                  "cursor-pointer border border-border bg-card/90 shadow-2xl shadow-black/20 transition hover:border-primary/50 hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/70",
+                  "relative cursor-pointer border border-border bg-card/50 shadow-2xl shadow-black/20 transition hover:border-white/50 hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70",
                   isSelected &&
-                    "border-primary bg-primary/10 shadow-primary/20 ring-2 ring-primary/60",
+                    "border-white bg-white/5 shadow-white/15 ring-2 ring-white/60",
                 )}
               >
-                <CardHeader>
+                <button
+                  type="button"
+                  aria-label={`Delete ${loop.title} program`}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setLoopToDelete(loop);
+                  }}
+                  className="absolute right-3 top-3 inline-flex h-8 items-center gap-1 rounded-full border border-border bg-background/95 px-3 text-sm font-medium text-foreground shadow-md shadow-black/10 transition hover:bg-foreground hover:text-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  Delete <X className="size-5" />
+                </button>
+
+                <CardHeader className="pr-32">
                   <CardTitle>{loop.title}</CardTitle>
                   <CardDescription>{loop.createdAt}</CardDescription>
                 </CardHeader>
@@ -104,6 +128,49 @@ const SecondPage = () => {
             );
           })}
         </section>
+
+        {loopToDelete && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm"
+            onClick={() => setLoopToDelete(null)}
+          >
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="delete-loop-title"
+              className="w-full max-w-xs rounded-3xl border border-border bg-card/95 p-6 text-center shadow-2xl shadow-black/40"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <h2
+                id="delete-loop-title"
+                className="text-2xl font-bold tracking-tight"
+              >
+                Are you sure ?
+              </h2>
+              <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                This will delete "{loopToDelete.title}" from your saved loops.
+              </p>
+
+              <div className="mt-6 grid grid-cols-2 gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="border-border bg-background/60 hover:bg-background"
+                  onClick={() => setLoopToDelete(null)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  className="bg-red-500 text-white shadow-lg shadow-red-950/30 hover:bg-red-600"
+                  onClick={handleDeleteConfirm}
+                >
+                  Confirm
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <Button
           asChild

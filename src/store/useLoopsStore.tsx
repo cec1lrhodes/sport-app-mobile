@@ -29,12 +29,17 @@ type AddLoopPayload = {
 type LoopsStore = {
   loops: LoopCard[];
   customLoops: LoopCard[];
+  deletedLoopIds: number[];
   selectedLoopId: number | null;
   addLoop: (payload: AddLoopPayload) => void;
+  deleteLoop: (loopId: number) => void;
   setSelectedLoopId: (loopId: number) => void;
 };
 
-type PersistedLoopsState = Pick<LoopsStore, "customLoops" | "selectedLoopId">;
+type PersistedLoopsState = Pick<
+  LoopsStore,
+  "customLoops" | "deletedLoopIds" | "selectedLoopId"
+>;
 
 const trainingDays: TrainingDay[] = ["A", "B", "C"];
 
@@ -80,7 +85,13 @@ const initialLoops: LoopCard[] = [
   },
 ];
 
-const getLoops = (customLoops: LoopCard[]) => [...initialLoops, ...customLoops];
+const getLoops = (customLoops: LoopCard[], deletedLoopIds: number[] = []) => {
+  const visibleInitialLoops = initialLoops.filter(
+    (loop) => !deletedLoopIds.includes(loop.id),
+  );
+
+  return [...visibleInitialLoops, ...customLoops];
+};
 
 const getFormattedDate = () => {
   const currentDate = new Date();
@@ -128,6 +139,7 @@ export const useLoopsStore = create<LoopsStore>()(
     (set) => ({
       loops: initialLoops,
       customLoops: [],
+      deletedLoopIds: [],
       selectedLoopId: initialLoops[0]?.id ?? null,
       addLoop: (payload) =>
         set((currentState) => {
@@ -140,8 +152,29 @@ export const useLoopsStore = create<LoopsStore>()(
 
           return {
             customLoops,
-            loops: getLoops(customLoops),
+            loops: getLoops(customLoops, currentState.deletedLoopIds),
             selectedLoopId: loop.id,
+          };
+        }),
+      deleteLoop: (loopId) =>
+        set((currentState) => {
+          const customLoops = currentState.customLoops.filter(
+            (loop) => loop.id !== loopId,
+          );
+          const deletedLoopIds = initialLoops.some((loop) => loop.id === loopId)
+            ? [...new Set([...currentState.deletedLoopIds, loopId])]
+            : currentState.deletedLoopIds;
+          const loops = getLoops(customLoops, deletedLoopIds);
+          const selectedLoopId =
+            currentState.selectedLoopId === loopId
+              ? (loops[0]?.id ?? null)
+              : currentState.selectedLoopId;
+
+          return {
+            customLoops,
+            deletedLoopIds,
+            loops,
+            selectedLoopId,
           };
         }),
       setSelectedLoopId: (loopId) =>
@@ -154,19 +187,26 @@ export const useLoopsStore = create<LoopsStore>()(
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         customLoops: state.customLoops,
+        deletedLoopIds: state.deletedLoopIds,
         selectedLoopId: state.selectedLoopId,
       }),
       merge: (persistedState, currentState) => {
         const persistedLoopsState =
           persistedState as Partial<PersistedLoopsState> | null;
         const customLoops = persistedLoopsState?.customLoops ?? [];
+        const deletedLoopIds = persistedLoopsState?.deletedLoopIds ?? [];
+        const loops = getLoops(customLoops, deletedLoopIds);
+        const selectedLoopId =
+          persistedLoopsState?.selectedLoopId ?? currentState.selectedLoopId;
 
         return {
           ...currentState,
           customLoops,
-          loops: getLoops(customLoops),
-          selectedLoopId:
-            persistedLoopsState?.selectedLoopId ?? currentState.selectedLoopId,
+          deletedLoopIds,
+          loops,
+          selectedLoopId: loops.some((loop) => loop.id === selectedLoopId)
+            ? selectedLoopId
+            : (loops[0]?.id ?? null),
         };
       },
     },
