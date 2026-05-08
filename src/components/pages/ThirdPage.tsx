@@ -8,7 +8,10 @@ import JournalHeader from "@/components/layout/Journal_Layout/JournalHeader";
 import JournalTrainingDialog from "@/components/layout/Journal_Layout/JournalTrainingDialog";
 import JournalWeekList from "@/components/layout/Journal_Layout/JournalWeekList";
 import type { SelectedTraining } from "@/components/layout/Journal_Layout/journal_utils/journalTypes";
-import { buildJournalWeeks } from "@/components/layout/Journal_Layout/journal_utils/journalUtils";
+import {
+  buildJournalWeeks,
+  getJournalTrainingProgress,
+} from "@/components/layout/Journal_Layout/journal_utils/journalUtils";
 import { cn } from "@/lib/utils";
 import { useJournalStore } from "@/store/useJournalStore";
 import { useLoopsStore } from "@/store/useLoopsStore";
@@ -56,6 +59,21 @@ const ThirdPage = () => {
 
     return buildJournalWeeks(selectedLoop.weeks, selectedLoop.exercises);
   }, [selectedLoop]);
+  const trainingProgress = useMemo(() => {
+    if (!selectedLoop) {
+      return {
+        completedTrainingDays: 0,
+        totalTrainingDays: 0,
+        progress: 0,
+      };
+    }
+
+    return getJournalTrainingProgress(
+      selectedLoop.id,
+      journalWeeks,
+      setResults,
+    );
+  }, [journalWeeks, selectedLoop, setResults]);
 
   const handleToggleWeek = (week: number) => {
     setOpenWeek((currentWeek) => (currentWeek === week ? null : week));
@@ -98,10 +116,14 @@ const ThirdPage = () => {
         <div>
           <Field className="w-full max-w-sm">
             <FieldLabel htmlFor="progress-upload">
-              <span>Upload progress</span>
-              <span className="ml-auto">66%</span>
+              <span>Training progress</span>
+              <span className="ml-auto">
+                {trainingProgress.progress}% (
+                {trainingProgress.completedTrainingDays}/
+                {trainingProgress.totalTrainingDays})
+              </span>
             </FieldLabel>
-            <Progress value={66} id="progress-upload" />
+            <Progress value={trainingProgress.progress} id="progress-upload" />
           </Field>
         </div>
 

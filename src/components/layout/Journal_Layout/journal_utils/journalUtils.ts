@@ -101,3 +101,35 @@ export const isJournalTrainingCompleted = (
     "completed"
   );
 };
+
+// PROGRESS BAR IN THIRDpage(JOURNAL PAGE)
+export const getJournalTrainingProgress = (
+  loopId: number,
+  journalWeeks: JournalWeek[],
+  setResults: Record<string, string>,
+) => {
+  const trainingDayGroups = journalWeeks.flatMap((weekGroup) =>
+    trainingDays
+      .map((day) => ({
+        week: weekGroup.week,
+        day,
+        exercises: weekGroup.days[day],
+      }))
+      .filter(({ exercises }) => exercises.length > 0),
+  );
+  const completedTrainingDays = trainingDayGroups.filter(
+    ({ week, day, exercises }) =>
+      getJournalTrainingStatus(loopId, week, day, exercises, setResults) !==
+      "pending",
+  ).length;
+  const totalTrainingDays = trainingDayGroups.length;
+
+  return {
+    completedTrainingDays,
+    totalTrainingDays,
+    progress:
+      totalTrainingDays > 0
+        ? Math.round((completedTrainingDays / totalTrainingDays) * 100)
+        : 0,
+  };
+};
