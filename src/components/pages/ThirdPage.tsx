@@ -4,6 +4,7 @@ import type {
   TrainingDay,
   TrainingExercise,
 } from "@/components/layout/CreateLoop_Layout/loop_utils/createLoopTypes";
+import { JournalExistingNotes } from "@/components/layout/Journal_Layout/JournalExistingNotes";
 import JournalHeader from "@/components/layout/Journal_Layout/JournalHeader";
 import JournalTrainingDialog from "@/components/layout/Journal_Layout/JournalTrainingDialog";
 import JournalWeekList from "@/components/layout/Journal_Layout/JournalWeekList";
@@ -37,10 +38,16 @@ const ThirdPage = () => {
     (state) => state.trainingCompletionDates,
   );
   const [openWeek, setOpenWeek] = useState<number | null>(null);
+  const [openNotes, setOpenNotes] = useState(false);
+
   const [selectedTraining, setSelectedTraining] =
     useState<SelectedTraining | null>(null);
 
   const [date, setDate] = useState<Date | undefined>(undefined);
+
+  const handleOpenNotes = () => {
+    setOpenNotes((current) => !current);
+  };
 
   const completedTrainingDates = useMemo(() => {
     const uniqueDateKeys = [...new Set(Object.values(trainingCompletionDates))];
@@ -157,8 +164,15 @@ const ThirdPage = () => {
         <button className="rounded-lg border border-border p-2">
           Statistics
         </button>
-        <button className="rounded-lg border border-border p-2">Notes</button>
+        <button
+          className="rounded-lg border border-border p-2"
+          onClick={handleOpenNotes}
+        >
+          Notes
+        </button>
       </section>
+
+      <JournalExistingNotes isOpen={openNotes} loopId={selectedLoop?.id} />
 
       {selectedTraining ? (
         <JournalTrainingDialog
