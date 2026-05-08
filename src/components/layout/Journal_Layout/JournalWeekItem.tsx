@@ -12,6 +12,10 @@ import {
   trainingDays,
 } from "./journal_utils/journalUtils";
 import JournalTrainingDayButton from "./JournalTrainingDayButton";
+import {
+  getTrainingCompletionKey,
+  useTrainingCompletionStore,
+} from "@/store/useTrainingCompletionStore";
 
 type JournalWeekItemProps = {
   loopId: number;
@@ -34,6 +38,10 @@ const JournalWeekItem = ({
   onToggleWeek,
   onOpenTraining,
 }: JournalWeekItemProps) => {
+  const trainingCompletionDates = useTrainingCompletionStore(
+    (state) => state.trainingCompletionDates,
+  );
+
   const handleToggleWeek = () => {
     onToggleWeek(weekGroup.week);
   };
@@ -77,6 +85,11 @@ const JournalWeekItem = ({
                   weekGroup.days[day],
                   setResults,
                 )}
+                completedDateKey={
+                  trainingCompletionDates[
+                    getTrainingCompletionKey(loopId, weekGroup.week, day)
+                  ]
+                }
                 onOpenTraining={onOpenTraining}
               />
             ))}

@@ -12,7 +12,14 @@ import { buildJournalWeeks } from "@/components/layout/Journal_Layout/journal_ut
 import { cn } from "@/lib/utils";
 import { useJournalStore } from "@/store/useJournalStore";
 import { useLoopsStore } from "@/store/useLoopsStore";
+import {
+  parseTrainingDateKey,
+  useTrainingCompletionStore,
+} from "@/store/useTrainingCompletionStore";
 import { Card } from "@/ui/card";
+import { Calendar } from "@/ui/calendar";
+import { Progress } from "@/ui/progress";
+import { Field, FieldLabel } from "@/ui/field";
 
 const ThirdPage = () => {
   const loops = useLoopsStore((state) => state.loops);
@@ -23,9 +30,24 @@ const ThirdPage = () => {
   const handleSetResultChange = useJournalStore(
     (state) => state.handleSetResultChange,
   );
-  const [openWeek, setOpenWeek] = useState<number | null>(1);
+  const trainingCompletionDates = useTrainingCompletionStore(
+    (state) => state.trainingCompletionDates,
+  );
+  const [openWeek, setOpenWeek] = useState<number | null>(null);
   const [selectedTraining, setSelectedTraining] =
     useState<SelectedTraining | null>(null);
+
+  const [date, setDate] = useState<Date | undefined>(undefined);
+
+  const completedTrainingDates = useMemo(() => {
+    const uniqueDateKeys = [...new Set(Object.values(trainingCompletionDates))];
+
+    return uniqueDateKeys.flatMap((dateKey) => {
+      const parsedDate = parseTrainingDateKey(dateKey);
+
+      return parsedDate ? [parsedDate] : [];
+    });
+  }, [trainingCompletionDates]);
 
   const journalWeeks = useMemo(() => {
     if (!selectedLoop) {
@@ -73,6 +95,16 @@ const ThirdPage = () => {
           weeks={selectedLoop?.weeks}
         />
 
+        <div>
+          <Field className="w-full max-w-sm">
+            <FieldLabel htmlFor="progress-upload">
+              <span>Upload progress</span>
+              <span className="ml-auto">66%</span>
+            </FieldLabel>
+            <Progress value={66} id="progress-upload" />
+          </Field>
+        </div>
+
         {selectedLoop ? (
           <JournalWeekList
             loopId={selectedLoop.id}
@@ -87,6 +119,23 @@ const ThirdPage = () => {
             Select a loop on the second page to open the journal.
           </Card>
         )}
+      </section>
+
+      <section className="mx-auto mt-3 w-full max-w-sm">
+        <Calendar
+          mode="single"
+          selected={date}
+          onSelect={setDate}
+          modifiers={{ training: completedTrainingDates }}
+          className="w-full rounded-lg border"
+        />
+      </section>
+
+      <section className="mx-auto mt-3 grid w-full max-w-sm grid-cols-2 gap-2">
+        <button className="rounded-lg border border-border p-2">
+          Statistics
+        </button>
+        <button className="rounded-lg border border-border p-2">Notes</button>
       </section>
 
       {selectedTraining ? (

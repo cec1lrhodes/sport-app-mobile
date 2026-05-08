@@ -3,6 +3,7 @@ import type {
   TrainingExercise,
 } from "@/components/layout/CreateLoop_Layout/loop_utils/createLoopTypes";
 import { cn } from "@/lib/utils";
+import { formatTrainingDateLabel } from "@/store/useTrainingCompletionStore";
 
 import {
   getExercisePreview,
@@ -14,6 +15,7 @@ type JournalTrainingDayButtonProps = {
   day: TrainingDay;
   exercises: TrainingExercise[];
   status: JournalTrainingStatus;
+  completedDateKey?: string;
   onOpenTraining: (
     week: number,
     day: TrainingDay,
@@ -26,6 +28,7 @@ const JournalTrainingDayButton = ({
   day,
   exercises,
   status,
+  completedDateKey,
   onOpenTraining,
 }: JournalTrainingDayButtonProps) => {
   const hasExercises = exercises.length > 0;
@@ -60,6 +63,11 @@ const JournalTrainingDayButton = ({
           )}
         >
           {exercisePreview}
+        </span>
+      ) : null}
+      {completedDateKey ? (
+        <span className="ml-auto shrink-0 rounded-full bg-blue-500/15 px-2 py-0.5 text-xs font-semibold text-blue-400">
+          {formatTrainingDateLabel(completedDateKey)}
         </span>
       ) : null}
     </button>

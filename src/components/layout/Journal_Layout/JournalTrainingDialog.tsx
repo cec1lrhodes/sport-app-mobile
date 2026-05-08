@@ -1,5 +1,14 @@
-import { X } from "lucide-react";
+import { useState } from "react";
+import { CalendarDays, X } from "lucide-react";
 
+import {
+  formatTrainingDateLabel,
+  getTrainingCompletionKey,
+  parseTrainingDateKey,
+  useTrainingCompletionStore,
+} from "@/store/useTrainingCompletionStore";
+import { Button } from "@/ui/button";
+import { Calendar } from "@/ui/calendar";
 import { Card } from "@/ui/card";
 
 import type { SelectedTraining } from "./journal_utils/journalTypes";
@@ -18,6 +27,49 @@ const JournalTrainingDialog = ({
   onClose,
   onSetResultChange,
 }: JournalTrainingDialogProps) => {
+  const trainingCompletionDates = useTrainingCompletionStore(
+    (state) => state.trainingCompletionDates,
+  );
+  const setTrainingCompletionDate = useTrainingCompletionStore(
+    (state) => state.setTrainingCompletionDate,
+  );
+  const clearTrainingCompletionDate = useTrainingCompletionStore(
+    (state) => state.clearTrainingCompletionDate,
+  );
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const completionKey = getTrainingCompletionKey(
+    selectedTraining.loopId,
+    selectedTraining.week,
+    selectedTraining.day,
+  );
+  const completedDateKey = trainingCompletionDates[completionKey];
+  const completedDate = completedDateKey
+    ? parseTrainingDateKey(completedDateKey)
+    : undefined;
+
+  const handleDateSelect = (date: Date | undefined) => {
+    if (!date) {
+      return;
+    }
+
+    setTrainingCompletionDate(
+      selectedTraining.loopId,
+      selectedTraining.week,
+      selectedTraining.day,
+      date,
+    );
+    setIsCalendarOpen(false);
+  };
+
+  const handleClearCompletionDate = () => {
+    clearTrainingCompletionDate(
+      selectedTraining.loopId,
+      selectedTraining.week,
+      selectedTraining.day,
+    );
+    setIsCalendarOpen(false);
+  };
+
   return (
     <div
       className="fixed inset-0 z-30 flex items-center justify-center bg-background/55 px-4 backdrop-blur-md"
@@ -36,9 +88,24 @@ const JournalTrainingDialog = ({
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-primary">
               Week {selectedTraining.week}
             </p>
-            <h2 id="training-dialog-title" className="mt-1 text-2xl font-bold">
-              Training {selectedTraining.day}
-            </h2>
+            <div className="mt-1 flex flex-wrap items-center gap-2">
+              <h2 id="training-dialog-title" className="text-2xl font-bold">
+                Training {selectedTraining.day}
+              </h2>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-7 gap-1 px-2 text-xs text-blue-400"
+                onClick={() => setIsCalendarOpen((currentValue) => !currentValue)}
+                aria-expanded={isCalendarOpen}
+              >
+                <CalendarDays className="size-3.5" aria-hidden="true" />
+                {completedDateKey
+                  ? formatTrainingDateLabel(completedDateKey)
+                  : "Set date"}
+              </Button>
+            </div>
           </div>
 
           <button
@@ -50,6 +117,28 @@ const JournalTrainingDialog = ({
             <X className="size-5" aria-hidden="true" />
           </button>
         </div>
+
+        {isCalendarOpen ? (
+          <div className="mt-4 rounded-xl border border-border bg-background/80 p-2">
+            <Calendar
+              mode="single"
+              selected={completedDate}
+              onSelect={handleDateSelect}
+              className="w-full"
+            />
+            {completedDateKey ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="mt-2 w-full text-muted-foreground"
+                onClick={handleClearCompletionDate}
+              >
+                Clear selected date
+              </Button>
+            ) : null}
+          </div>
+        ) : null}
 
         <div className="mt-5 flex flex-col gap-5">
           {selectedTraining.exercises.length > 0 ? (
