@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CalendarDays, X } from "lucide-react";
+import { CalendarDays, NotebookPen, X } from "lucide-react";
 
 import {
   formatTrainingDateLabel,
@@ -13,6 +13,7 @@ import { Card } from "@/ui/card";
 
 import type { SelectedTraining } from "./journal_utils/journalTypes";
 import JournalExerciseResult from "./JournalExerciseResult";
+import { JournalNotes } from "./JournalNotes";
 
 type JournalTrainingDialogProps = {
   selectedTraining: SelectedTraining;
@@ -37,6 +38,13 @@ const JournalTrainingDialog = ({
     (state) => state.clearTrainingCompletionDate,
   );
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+
+  const [openNotes, setOpenNotes] = useState(false);
+
+  const handleOpenNotes = () => {
+    setOpenNotes((current) => !current);
+  };
+
   const completionKey = getTrainingCompletionKey(
     selectedTraining.loopId,
     selectedTraining.week,
@@ -70,6 +78,18 @@ const JournalTrainingDialog = ({
     setIsCalendarOpen(false);
   };
 
+  if (openNotes) {
+    return (
+      <JournalNotes
+        loopId={selectedTraining.loopId}
+        week={selectedTraining.week}
+        day={selectedTraining.day}
+        completedDateKey={completedDateKey}
+        onClose={() => setOpenNotes(false)}
+      />
+    );
+  }
+
   return (
     <div
       className="fixed inset-0 z-30 flex items-center justify-center bg-background/55 px-4 backdrop-blur-md"
@@ -97,7 +117,9 @@ const JournalTrainingDialog = ({
                 variant="outline"
                 size="sm"
                 className="h-7 gap-1 px-2 text-xs text-blue-400"
-                onClick={() => setIsCalendarOpen((currentValue) => !currentValue)}
+                onClick={() =>
+                  setIsCalendarOpen((currentValue) => !currentValue)
+                }
                 aria-expanded={isCalendarOpen}
               >
                 <CalendarDays className="size-3.5" aria-hidden="true" />
@@ -159,6 +181,16 @@ const JournalTrainingDialog = ({
             </p>
           )}
         </div>
+
+        <Button
+          type="button"
+          variant="outline"
+          className="mt-5 w-full justify-center border-primary/20 bg-primary/5 text-primary hover:bg-primary/10"
+          onClick={handleOpenNotes}
+        >
+          <NotebookPen className="size-4" aria-hidden="true" />
+          <span className="font-serif">notes</span>
+        </Button>
       </Card>
     </div>
   );
