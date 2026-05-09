@@ -11,12 +11,14 @@ import JournalWeekList from "@/components/layout/Journal_Layout/JournalWeekList"
 import type { SelectedTraining } from "@/components/layout/Journal_Layout/journal_utils/journalTypes";
 import {
   buildJournalWeeks,
+  getJournalTrainingStatus,
   getJournalTrainingProgress,
 } from "@/components/layout/Journal_Layout/journal_utils/journalUtils";
 import { cn } from "@/lib/utils";
 import { useJournalStore } from "@/store/useJournalStore";
 import { useLoopsStore } from "@/store/useLoopsStore";
 import {
+  formatTrainingDateKey,
   parseTrainingDateKey,
   useTrainingCompletionStore,
 } from "@/store/useTrainingCompletionStore";
@@ -49,16 +51,6 @@ const ThirdPage = () => {
     setOpenNotes((current) => !current);
   };
 
-  const completedTrainingDates = useMemo(() => {
-    const uniqueDateKeys = [...new Set(Object.values(trainingCompletionDates))];
-
-    return uniqueDateKeys.flatMap((dateKey) => {
-      const parsedDate = parseTrainingDateKey(dateKey);
-
-      return parsedDate ? [parsedDate] : [];
-    });
-  }, [trainingCompletionDates]);
-
   const journalWeeks = useMemo(() => {
     if (!selectedLoop) {
       return [];
@@ -66,6 +58,82 @@ const ThirdPage = () => {
 
     return buildJournalWeeks(selectedLoop.weeks, selectedLoop.exercises);
   }, [selectedLoop]);
+
+  const currentLoopTrainingCompletions = useMemo(() => {
+    if (!selectedLoop) {
+      return [];
+    }
+
+    return Object.entries(trainingCompletionDates).flatMap(
+      ([completionKey, dateKey]) => {
+        const [loopId, week, day] = completionKey.split("-");
+
+        if (Number(loopId) !== selectedLoop.id) {
+          return [];
+        }
+
+        const weekNumber = Number(week);
+        const journalWeek = journalWeeks.find(
+          (weekGroup) => weekGroup.week === weekNumber,
+        );
+
+        const trainingDay = day as TrainingDay;
+
+        if (!journalWeek || !(trainingDay in journalWeek.days)) {
+          return [];
+        }
+
+        return [
+          {
+            week: weekNumber,
+            dateKey,
+            status: getJournalTrainingStatus(
+              selectedLoop.id,
+              weekNumber,
+              trainingDay,
+              journalWeek.days[trainingDay],
+              setResults,
+            ),
+          },
+        ];
+      },
+    );
+  }, [journalWeeks, selectedLoop, setResults, trainingCompletionDates]);
+
+  const mismatchedTrainingDateKeys = useMemo(() => {
+    return new Set(
+      currentLoopTrainingCompletions
+        .filter((completion) => completion.status === "mismatched")
+        .map((completion) => completion.dateKey),
+    );
+  }, [currentLoopTrainingCompletions]);
+
+  const completedTrainingDates = useMemo(() => {
+    const uniqueDateKeys = [
+      ...new Set(
+        currentLoopTrainingCompletions
+          .filter(
+            (completion) => !mismatchedTrainingDateKeys.has(completion.dateKey),
+          )
+          .map((completion) => completion.dateKey),
+      ),
+    ];
+
+    return uniqueDateKeys.flatMap((dateKey) => {
+      const parsedDate = parseTrainingDateKey(dateKey);
+
+      return parsedDate ? [parsedDate] : [];
+    });
+  }, [currentLoopTrainingCompletions, mismatchedTrainingDateKeys]);
+
+  const mismatchedTrainingDates = useMemo(() => {
+    return [...mismatchedTrainingDateKeys].flatMap((dateKey) => {
+      const parsedDate = parseTrainingDateKey(dateKey);
+
+      return parsedDate ? [parsedDate] : [];
+    });
+  }, [mismatchedTrainingDateKeys]);
+
   const trainingProgress = useMemo(() => {
     if (!selectedLoop) {
       return {
@@ -84,6 +152,23 @@ const ThirdPage = () => {
 
   const handleToggleWeek = (week: number) => {
     setOpenWeek((currentWeek) => (currentWeek === week ? null : week));
+  };
+
+  const handleSelectDate = (selectedDate: Date | undefined) => {
+    setDate(selectedDate);
+
+    if (!selectedDate) {
+      return;
+    }
+
+    const selectedDateKey = formatTrainingDateKey(selectedDate);
+    const selectedTrainingCompletion = currentLoopTrainingCompletions.find(
+      (completion) => completion.dateKey === selectedDateKey,
+    );
+
+    if (selectedTrainingCompletion) {
+      setOpenWeek(selectedTrainingCompletion.week);
+    }
   };
 
   const handleOpenTraining = (
@@ -154,8 +239,11 @@ const ThirdPage = () => {
         <Calendar
           mode="single"
           selected={date}
-          onSelect={setDate}
-          modifiers={{ training: completedTrainingDates }}
+          onSelect={handleSelectDate}
+          modifiers={{
+            training: completedTrainingDates,
+            mismatchedTraining: mismatchedTrainingDates,
+          }}
           className="w-full rounded-lg border"
         />
       </section>

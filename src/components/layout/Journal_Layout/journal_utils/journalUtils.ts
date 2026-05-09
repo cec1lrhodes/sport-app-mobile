@@ -80,7 +80,7 @@ export const getJournalTrainingStatus = (
         return "pending";
       }
 
-      if (Number(result) !== exercise.reps) {
+      if (Number(result) < exercise.reps) {
         hasRepsMismatch = true;
       }
     }
