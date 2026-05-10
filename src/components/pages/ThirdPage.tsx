@@ -248,10 +248,7 @@ const ThirdPage = () => {
         />
       </section>
 
-      <section className="mx-auto mt-3 grid w-full max-w-sm grid-cols-2 gap-2">
-        <button className="rounded-lg border border-border p-2">
-          Statistics
-        </button>
+      <section className="mx-auto mt-3 grid w-full max-w-sm grid-cols-1 gap-2">
         <button
           className="rounded-lg border border-border p-2"
           onClick={handleOpenNotes}

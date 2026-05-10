@@ -1,9 +1,15 @@
 import { Link } from "@tanstack/react-router";
-import { type KeyboardEvent, useState } from "react";
+import { type KeyboardEvent, useEffect, useState } from "react";
 
 import { Button } from "@/ui/button";
-import { type LoopCard, useLoopsStore } from "@/store/useLoopsStore";
+import {
+  confirmedLoopStatus,
+  type LoopCard,
+  useLoopsStore,
+} from "@/store/useLoopsStore";
+import { useJournalStore } from "@/store/useJournalStore";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/ui/badge";
 import {
   Card,
   CardContent,
@@ -19,7 +25,13 @@ const SecondPage = () => {
   const selectedLoopId = useLoopsStore((state) => state.selectedLoopId);
   const setSelectedLoopId = useLoopsStore((state) => state.setSelectedLoopId);
   const deleteLoop = useLoopsStore((state) => state.deleteLoop);
+  const syncLoopStatuses = useLoopsStore((state) => state.syncLoopStatuses);
+  const setResults = useJournalStore((state) => state.setResults);
   const [loopToDelete, setLoopToDelete] = useState<LoopCard | null>(null);
+
+  useEffect(() => {
+    syncLoopStatuses(setResults);
+  }, [setResults, syncLoopStatuses]);
 
   const handleLoopSelect = (loopId: number) => {
     setSelectedLoopId(loopId);
@@ -106,7 +118,14 @@ const SecondPage = () => {
                 </button>
 
                 <CardHeader className="pr-32">
-                  <CardTitle>{loop.title}</CardTitle>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <CardTitle>{loop.title}</CardTitle>
+                    {loop.status === confirmedLoopStatus ? (
+                      <Badge className="bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300">
+                        Confirm
+                      </Badge>
+                    ) : null}
+                  </div>
                   <CardDescription>{loop.createdAt}</CardDescription>
                 </CardHeader>
                 <CardContent>

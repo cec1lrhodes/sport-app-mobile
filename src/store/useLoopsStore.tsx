@@ -6,6 +6,10 @@ import {
   type TrainingDay,
   type TrainingExercise,
 } from "@/components/layout/CreateLoop_Layout/loop_utils/createLoopTypes";
+import {
+  buildJournalWeeks,
+  getJournalTrainingProgress,
+} from "@/components/layout/Journal_Layout/journal_utils/journalUtils";
 
 export type LoopCard = {
   id: number;
@@ -18,6 +22,9 @@ export type LoopCard = {
   target: string;
   status: string;
 };
+
+const savedLoopStatus = "Saved";
+export const confirmedLoopStatus = "Confirm";
 
 type AddLoopPayload = {
   title: string;
@@ -34,6 +41,7 @@ type LoopsStore = {
   addLoop: (payload: AddLoopPayload) => void;
   deleteLoop: (loopId: number) => void;
   setSelectedLoopId: (loopId: number) => void;
+  syncLoopStatuses: (setResults: Record<string, string>) => void;
 };
 
 type PersistedLoopsState = Pick<
@@ -91,6 +99,44 @@ const getLoops = (customLoops: LoopCard[], deletedLoopIds: number[] = []) => {
   );
 
   return [...visibleInitialLoops, ...customLoops];
+};
+
+const getLoopStatus = (
+  loop: LoopCard,
+  setResults: Record<string, string>,
+) => {
+  const progress = getJournalTrainingProgress(
+    loop.id,
+    buildJournalWeeks(loop.weeks, loop.exercises),
+    setResults,
+  );
+
+  return progress.totalTrainingDays > 0 && progress.progress === 100
+    ? confirmedLoopStatus
+    : savedLoopStatus;
+};
+
+const syncLoopsWithTrainingStatuses = (
+  loops: LoopCard[],
+  setResults: Record<string, string>,
+) => {
+  let hasChanges = false;
+  const syncedLoops = loops.map((loop) => {
+    const status = getLoopStatus(loop, setResults);
+
+    if (loop.status === status) {
+      return loop;
+    }
+
+    hasChanges = true;
+
+    return {
+      ...loop,
+      status,
+    };
+  });
+
+  return hasChanges ? syncedLoops : loops;
 };
 
 const getFormattedDate = () => {
@@ -181,6 +227,29 @@ export const useLoopsStore = create<LoopsStore>()(
         set(() => ({
           selectedLoopId: loopId,
         })),
+      syncLoopStatuses: (setResults) =>
+        set((currentState) => {
+          const customLoops = syncLoopsWithTrainingStatuses(
+            currentState.customLoops,
+            setResults,
+          );
+          const loops = syncLoopsWithTrainingStatuses(
+            getLoops(customLoops, currentState.deletedLoopIds),
+            setResults,
+          );
+
+          if (
+            customLoops === currentState.customLoops &&
+            loops === currentState.loops
+          ) {
+            return currentState;
+          }
+
+          return {
+            customLoops,
+            loops,
+          };
+        }),
     }),
     {
       name: "sport-app-custom-loops",
