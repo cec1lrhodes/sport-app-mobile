@@ -1,7 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 
 import { cn } from "@/lib/utils";
-import { User } from "lucide-react";
+import { Notebook, SquareLibrary, User } from "lucide-react";
 
 type NavItem = {
   to: "/" | "/second" | "/third" | "/profile";
@@ -13,8 +13,22 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   { to: "/", label: "Main" },
-  { to: "/second", label: "Second", matchPrefix: "/second" },
-  { to: "/third", label: "Journal", matchPrefix: "/third" },
+  {
+    to: "/second",
+    label: "Second",
+    matchPrefix: "/second",
+    icon: (
+      <SquareLibrary className="size-5 {isActive ? 'text-black' : 'text-muted-foreground'}" />
+    ),
+  },
+  {
+    to: "/third",
+    label: "Journal",
+    matchPrefix: "/third",
+    icon: (
+      <Notebook className="size-5 {isActive ? 'text-black' : 'text-muted-foreground'}" />
+    ),
+  },
   {
     to: "/profile",
     label: "Profile",

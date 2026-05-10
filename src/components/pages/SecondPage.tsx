@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from "@/ui/card";
 import { X } from "lucide-react";
+import CheckFormForDelete from "../layout/common/CheckFormForDelete";
 
 const SecondPage = () => {
   const loops = useLoopsStore((state) => state.loops);
@@ -49,14 +50,14 @@ const SecondPage = () => {
     <main className="min-h-screen bg-background px-4 pb-36 pt-8 text-foreground">
       <section className="mx-auto flex min-h-[calc(100vh-8rem)] w-full max-w-sm flex-col gap-7">
         <header className="space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.32em] text-primary">
+          <p className="text-xs font-semibold uppercase tracking-[0.32em] text-[#cdcdcd]">
             Program builder
           </p>
           <div className="space-y-2">
-            <h1 className="text-4xl font-bold tracking-tight">
+            <h1 className="text-4xl font-bold tracking-tight text-[#f4f4f6]">
               Set Your Program
             </h1>
-            <p className="text-sm leading-6 text-muted-foreground">
+            <p className="text-sm leading-6 text-[#7e7e7e]">
               Select a saved training cycle or create a new program from your
               own exercises.
             </p>
@@ -69,7 +70,7 @@ const SecondPage = () => {
         >
           <p
             id="current-program-heading"
-            className="text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground"
+            className="text-xs font-semibold uppercase tracking-[0.28em] text-[#cdcdcd]"
           >
             loops
           </p>
@@ -130,46 +131,11 @@ const SecondPage = () => {
         </section>
 
         {loopToDelete && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm"
-            onClick={() => setLoopToDelete(null)}
-          >
-            <div
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="delete-loop-title"
-              className="w-full max-w-xs rounded-3xl border border-border bg-card/95 p-6 text-center shadow-2xl shadow-black/40"
-              onClick={(event) => event.stopPropagation()}
-            >
-              <h2
-                id="delete-loop-title"
-                className="text-2xl font-bold tracking-tight"
-              >
-                Are you sure ?
-              </h2>
-              <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                This will delete "{loopToDelete.title}" from your saved loops.
-              </p>
-
-              <div className="mt-6 grid grid-cols-2 gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="border-border bg-background/60 hover:bg-background"
-                  onClick={() => setLoopToDelete(null)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="button"
-                  className="bg-red-500 text-white shadow-lg shadow-red-950/30 hover:bg-red-600"
-                  onClick={handleDeleteConfirm}
-                >
-                  Confirm
-                </Button>
-              </div>
-            </div>
-          </div>
+          <CheckFormForDelete
+            onDelete={() => setLoopToDelete(null)}
+            deletedTitle={loopToDelete.title}
+            handleDeleteConfirm={handleDeleteConfirm}
+          />
         )}
 
         <Button

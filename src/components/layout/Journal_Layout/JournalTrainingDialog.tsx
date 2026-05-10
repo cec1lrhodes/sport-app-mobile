@@ -7,12 +7,14 @@ import {
   parseTrainingDateKey,
   useTrainingCompletionStore,
 } from "@/store/useTrainingCompletionStore";
+import { useExerciseHistoryStore } from "@/store/useExerciseHistoryStore";
 import { Button } from "@/ui/button";
 import { Calendar } from "@/ui/calendar";
 import { Card } from "@/ui/card";
 
 import type { SelectedTraining } from "./journal_utils/journalTypes";
 import JournalExerciseResult from "./JournalExerciseResult";
+import { getJournalSetResultKey } from "./journal_utils/journalUtils";
 import { JournalNotes } from "./JournalNotes";
 
 type JournalTrainingDialogProps = {
@@ -37,6 +39,9 @@ const JournalTrainingDialog = ({
   const clearTrainingCompletionDate = useTrainingCompletionStore(
     (state) => state.clearTrainingCompletionDate,
   );
+  const upsertTrainingEntries = useExerciseHistoryStore(
+    (state) => state.upsertTrainingEntries,
+  );
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   const [openNotes, setOpenNotes] = useState(false);
@@ -54,6 +59,29 @@ const JournalTrainingDialog = ({
   const completedDate = completedDateKey
     ? parseTrainingDateKey(completedDateKey)
     : undefined;
+
+  const getSetResult = (exerciseId: number, setNumber: number) => {
+    const resultKey = getJournalSetResultKey(
+      selectedTraining.loopId,
+      selectedTraining.week,
+      selectedTraining.day,
+      exerciseId,
+      setNumber,
+    );
+
+    return setResults[resultKey]?.trim() ?? "";
+  };
+
+  const isTrainingReadyToConfirm =
+    Boolean(completedDateKey) &&
+    selectedTraining.exercises.length > 0 &&
+    selectedTraining.exercises.every((exercise) =>
+      Array.from({ length: exercise.sets }, (_, index) => {
+        const result = getSetResult(exercise.id, index + 1);
+
+        return result && !Number.isNaN(Number(result));
+      }).every(Boolean),
+    );
 
   const handleDateSelect = (date: Date | undefined) => {
     if (!date) {
@@ -76,6 +104,34 @@ const JournalTrainingDialog = ({
       selectedTraining.day,
     );
     setIsCalendarOpen(false);
+  };
+
+  const handleConfirmTraining = () => {
+    if (!completedDateKey || !isTrainingReadyToConfirm) {
+      return;
+    }
+
+    const createdAt = new Date().toISOString();
+    const entries = selectedTraining.exercises.map((exercise) => ({
+      id: `${selectedTraining.loopId}-${selectedTraining.week}-${selectedTraining.day}-${exercise.id}-${completedDateKey}`,
+      loopId: selectedTraining.loopId,
+      week: selectedTraining.week,
+      day: selectedTraining.day,
+      dateKey: completedDateKey,
+      exerciseId: exercise.id,
+      exerciseName: exercise.name,
+      plannedSets: exercise.sets,
+      plannedReps: exercise.reps,
+      plannedWeight: exercise.weight,
+      actualReps: Array.from({ length: exercise.sets }, (_, index) =>
+        Number(getSetResult(exercise.id, index + 1)),
+      ),
+      actualWeight: exercise.weight,
+      createdAt,
+    }));
+
+    upsertTrainingEntries(entries);
+    onClose();
   };
 
   if (openNotes) {
@@ -181,6 +237,15 @@ const JournalTrainingDialog = ({
             </p>
           )}
         </div>
+
+        <Button
+          type="button"
+          className="mt-5 w-full justify-center"
+          onClick={handleConfirmTraining}
+          disabled={!isTrainingReadyToConfirm}
+        >
+          Confirm training
+        </Button>
 
         <Button
           type="button"

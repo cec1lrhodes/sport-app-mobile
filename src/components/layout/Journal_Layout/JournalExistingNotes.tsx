@@ -90,9 +90,9 @@ export const JournalExistingNotes = ({
           {notes.length > 0 ? (
             <div className="space-y-3">
               {notes.map((note) => (
-                <p key={note.key} className="leading-relaxed text-foreground">
+                <p key={note.key} className="leading-relaxed text-[#f4f4f6]">
                   <span className="font-semibold text-primary">
-                    {note.day}({formatTrainingDateLabel(note.dateKey)}).
+                    {note.day}({formatTrainingDateLabel(note.dateKey)})
                   </span>{" "}
                   {note.note}
                 </p>

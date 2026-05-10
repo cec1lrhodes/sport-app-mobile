@@ -85,6 +85,14 @@ body {
     var(--background);
 }
 
+.Roboto {
+  font-family: "Roboto", sans-serif;
+}
+
+.Montserrat {
+  font-family: "Montserrat", sans-serif;
+}
+
 button,
 input {
   font: inherit;
